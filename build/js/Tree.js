@@ -3,143 +3,195 @@
  * Converts a nested list into a multilevel
  * tree view menu.
  *
- * @Usage: $('.my-menu').tree(options)
- *         or add [data-widget="tree"] to the ul element
- *         Pass any option as data-option="value"
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
+ * @Usage: Tree.init(element, options)
+ *         Add [data-widget="tree"] to the ul element
+ *         Pass any option as data-option-name="value"
  */
-+function ($) {
-  'use strict'
+/* global runner */
+/* global Velocity */
+/* global Utilities */
+const Tree = (() => {
+  /**
+   * Default Options list
+   * @type {Object}
+   */
+  const Default = {
+    animationSpeed: 300,
+    accordion: true,
+    followLink: true,
+    trigger: '.treeview a',
+    easing: 'easeInSine',
+  };
 
-  var DataKey = 'lte.tree'
+  /**
+   * Selectors for query selections
+   * @type {Object}
+   */
+  const Selector = {
+    data: '[data-widget="tree"]',
+    activeTreeview: '.treeview.active',
+  };
 
-  var Default = {
-    animationSpeed: 500,
-    accordion     : true,
-    followLink    : false,
-    trigger       : '.treeview a'
-  }
-
-  var Selector = {
-    tree        : '.tree',
-    treeview    : '.treeview',
-    treeviewMenu: '.treeview-menu',
-    open        : '.menu-open, .active',
-    li          : 'li',
-    data        : '[data-widget="tree"]',
-    active      : '.active'
-  }
-
-  var ClassName = {
+  /**
+   * DOM Class NAmes
+   * @type {Object}
+   */
+  const ClassName = {
     open: 'menu-open',
-    tree: 'tree'
-  }
+    tree: 'tree',
+    treeview: 'treeview',
+    treeviewMenu: 'treeview-menu',
+  };
 
-  var Event = {
-    collapsed: 'collapsed.tree',
-    expanded : 'expanded.tree'
-  }
+  /**
+   * Contextual Options
+   */
+  let options;
 
-  // Tree Class Definition
-  // =====================
-  var Tree = function (element, options) {
-    this.element = element
-    this.options = options
+  /**
+   * Contextual Element
+   */
+  let element;
 
-    $(this.element).addClass(ClassName.tree)
+  /**
+   * Collapse element
+   * @param  {Object} tree     The child tree/menu
+   * @param  {Object} parentLi The parent element that contains the tree
+   */
+  const collapse = (tree, parentLi) => {
+    parentLi.classList.remove(ClassName.open);
 
-    $(Selector.treeview + Selector.active, this.element).addClass(ClassName.open)
+    const treeLocal = tree;
 
-    this._setUpListeners()
-  }
+    Array.prototype.forEach.call(treeLocal, (t) => {
+      const treeItem = t;
+      Velocity(treeItem, 'slideUp', {
+        easing: options.easing,
+        duration: options.animationSpeed,
+      });
+    });
+  };
 
-  Tree.prototype.toggle = function (link, event) {
-    var treeviewMenu = link.next(Selector.treeviewMenu)
-    var parentLi     = link.parent()
-    var isOpen       = parentLi.hasClass(ClassName.open)
+  /**
+   * Expand menu selection, and close all siblings
+   * @param  {Object} tree     The child tree/menu
+   * @param  {Object} parentLi The parent element that contains the tree
+   */
+  const expand = (tree, parentLi) => {
+    // We need to access direct siblings to support multilevel menus remaining open
+    const openMenus = Utilities.findChildren('LI', ClassName.open, parentLi.parentNode);
 
-    if (!parentLi.is(Selector.treeview)) {
-      return
+    // For each currently opened menu (which should be just 1) we should close
+    if (options.accordion) {
+      Array.prototype.forEach.call(openMenus, (menu) => {
+        const openTree = Utilities.findChildren('UL', ClassName.treeviewMenu, menu);
+
+        // Collapse
+        collapse(openTree, menu);
+      });
     }
 
-    if (!this.options.followLink || link.attr('href') == '#') {
-      event.preventDefault()
+    // Open this menu
+    parentLi.classList.add(ClassName.open);
+
+    const firstTree = tree[0]; // Only the direct descendant needs to be closed
+    Velocity(firstTree, 'slideDown', {
+      easing: options.easing,
+      duration: options.animationSpeed,
+    });
+  };
+
+  /**
+   * Handle show/hide of collapsible menus
+   * @param  {Object} link  The link element clicked
+   * @param  {Object} event The Triggered Event
+   */
+  const toggle = (link, event) => {
+    // Get contextual DOM elements
+    const parentLi = link.parentNode;
+    const isOpen = parentLi.classList.contains(ClassName.open);
+    const treeviewMenu = Utilities.findChildren('UL', ClassName.treeviewMenu, parentLi);
+
+    // Stop if not a menu tree
+    if (!parentLi.classList.contains(ClassName.treeview)) {
+      return;
     }
 
+    // Stop link follow
+    if (!options.followLink || link.getAttribute('href') === '#') {
+      event.preventDefault();
+    }
+
+    // Open or close depending on current statw
     if (isOpen) {
-      this.collapse(treeviewMenu, parentLi)
+      collapse(treeviewMenu, parentLi);
     } else {
-      this.expand(treeviewMenu, parentLi)
+      expand(treeviewMenu, parentLi);
     }
-  }
+  };
 
-  Tree.prototype.expand = function (tree, parent) {
-    var expandedEvent = $.Event(Event.expanded)
+  /**
+   * Binds an event listener to each parent menu element
+   * @return {Object}
+   */
+  const setUpListeners = () => {
+    // Binds a click event listener for each element
+    Array.prototype.forEach.call(
+      element.querySelectorAll(options.trigger),
+      (context) => {
+        context.addEventListener('click', (event) => {
+          toggle(context, event);
+        });
+      },
+    );
+  };
 
-    if (this.options.accordion) {
-      var openMenuLi = parent.siblings(Selector.open)
-      var openTree   = openMenuLi.children(Selector.treeviewMenu)
-      this.collapse(openTree, openMenuLi)
+  /**
+   * Opens existing active element(s) and calls method to bind
+   * click event listeners onto the sidebar itself
+   * @param  {Object} el   The main sidebar element
+   * @param  {Object} opts list of options
+   */
+  const Constructor = (el, opts) => {
+    // Set options here
+    options = Utilities.grabOptions(Default, opts, el);
+
+    // Add parameters to global scope
+    element = el;
+    element.classList.add(ClassName.tree);
+
+    // Open menu for active element
+    const active = element.querySelector(Selector.activeTreeview);
+
+    if (active !== null) {
+      active.classList.add(ClassName.open);
     }
 
-    parent.addClass(ClassName.open)
-    tree.slideDown(this.options.animationSpeed, function () {
-      $(this.element).trigger(expandedEvent)
-    }.bind(this))
-  }
+    // bind listeners
+    setUpListeners();
+  };
 
-  Tree.prototype.collapse = function (tree, parentLi) {
-    var collapsedEvent = $.Event(Event.collapsed)
+  return {
+    /**
+     * Constructor. Binds listeners onto sidebar elements
+     */
+    bind: () => {
+      Array.prototype.forEach.call(
+        document.querySelectorAll(Selector.data),
+        sidebar => Constructor(sidebar),
+      );
+    },
+    /**
+     * Manually Assign
+     * @param  {Object} sidebar Element to bind to
+     * @param  {Object} options Options to override ()
+     */
+    init: (sidebar, opts) => Constructor(sidebar, opts),
+  };
+})();
 
-    tree.find(Selector.open).removeClass(ClassName.open)
-    parentLi.removeClass(ClassName.open)
-    tree.slideUp(this.options.animationSpeed, function () {
-      tree.find(Selector.open + ' > ' + Selector.treeview).slideUp()
-      $(this.element).trigger(collapsedEvent)
-    }.bind(this))
-  }
-
-  // Private
-
-  Tree.prototype._setUpListeners = function () {
-    var that = this
-
-    $(this.element).on('click', this.options.trigger, function (event) {
-      that.toggle($(this), event)
-    })
-  }
-
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
-
-      if (!data) {
-        var options = $.extend({}, Default, $this.data(), typeof option == 'object' && option)
-        $this.data(DataKey, new Tree($this, options))
-      }
-    })
-  }
-
-  var old = $.fn.tree
-
-  $.fn.tree             = Plugin
-  $.fn.tree.Constructor = Tree
-
-  // No Conflict Mode
-  // ================
-  $.fn.tree.noConflict = function () {
-    $.fn.tree = old
-    return this
-  }
-
-  // Tree Data API
-  // =============
-  $(window).on('load', function () {
-    $(Selector.data).each(function () {
-      Plugin.call($(this))
-    })
-  })
-
-}(jQuery)
+runner.push(Tree.bind);
