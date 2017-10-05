@@ -76,7 +76,6 @@ const PushMenu = (() => {
 
   /**
    * Collapse with time delay via mouseout hover
-   * @return {[type]} [description]
    */
   const collapse = () => {
     setTimeout(() => {
@@ -85,12 +84,15 @@ const PushMenu = (() => {
     }, options.expandTransitionDelay);
   };
 
+  /**
+   * Bind mouseover and mouseleave events to colapse/expand sidebar
+   */
   const expandOnHover = () => {
     Array.prototype.forEach.call(
       document.getElementsByClassName(ClassName.mainSidebar),
       (context) => {
         context.addEventListener('mouseover', () => {
-          //
+          // Handle Expansion
           if (body.classList.contains(ClassName.mini) &&
               body.classList.contains(ClassName.collapsed) &&
               windowWidth > options.collapseScreenSize) {
@@ -100,7 +102,9 @@ const PushMenu = (() => {
 
         // handle Close the sidebar
         context.addEventListener('mouseleave', () => {
-          collapse();
+          if (body.classList.contains(ClassName.expanded)) {
+            collapse();
+          }
         });
       },
     );
