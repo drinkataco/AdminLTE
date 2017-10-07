@@ -1,6 +1,6 @@
 // AdminLite Gruntfile
 module.exports = function (grunt) { // jshint ignore:line
-  'use strict'
+  'use strict';
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),

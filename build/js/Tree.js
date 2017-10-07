@@ -37,7 +37,7 @@ const Tree = (() => {
   };
 
   /**
-   * DOM Class NAmes
+   * DOM Class Names
    * @type {Object}
    */
   const ClassName = {
@@ -72,6 +72,9 @@ const Tree = (() => {
       Velocity(treeItem, 'slideUp', {
         easing: options.easing,
         duration: options.animationSpeed,
+      }).then(() => {
+        // Call custom event to indicate collapse
+        element.dispatchEvent(new CustomEvent('tree_collapsed'));
       });
     });
   };
@@ -102,6 +105,9 @@ const Tree = (() => {
     Velocity(firstTree, 'slideDown', {
       easing: options.easing,
       duration: options.animationSpeed,
+    }).then(() => {
+      // Call custom event to indicate expansion
+      element.dispatchEvent(new CustomEvent('tree_expanded'));
     });
   };
 
