@@ -128,7 +128,9 @@ module.exports = function (grunt) { // jshint ignore:line
           'build/js/Utilities.js',
           'build/js/Tree.js',
           'build/js/PushMenu.js',
-          'build/js/Layout.js'
+          'build/js/Layout.js',
+          'build/js/Dropdown.js',
+          'build/js/Modal.js',
           // 'build/js/BoxRefresh.js',
           // 'build/js/BoxWidget.js',
           // 'build/js/ControlSidebar.js',

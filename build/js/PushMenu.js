@@ -10,7 +10,7 @@
 /* global Utilities */
 const PushMenu = (() => {
   /**
-   * Default Options list
+   * Default Options
    * @type {Object}
    */
   const Default = {

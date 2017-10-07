@@ -15,7 +15,7 @@
 /* global Utilities */
 const Layout = (() => {
   /**
-   * Default Options list
+   * Default Options
    * @type {Object}
    */
   const Default = {

@@ -16,7 +16,7 @@
 /* global Utilities */
 const Tree = (() => {
   /**
-   * Default Options list
+   * Default Options
    * @type {Object}
    */
   const Default = {
