@@ -754,6 +754,8 @@ const Dropdown = (() => {
    * @type {Object}
    */
   const Default = {
+    clearOthers: true,
+    boxClickClose: true,
   };
 
   /**
@@ -769,8 +771,8 @@ const Dropdown = (() => {
    * @type {Object}
    */
   const ClassName = {
-    disabled: 'disabled',
     open: 'open',
+    disabled: 'disabled',
   };
 
   /**
@@ -778,53 +780,91 @@ const Dropdown = (() => {
    */
   let options;
 
+  /**
+   * Handle Keydown ESC to clear dropdowns
+   * @param {Object} e event
+   */
+  const handleKeydown = (e) => {
+    const escKeyCode = 27;
+
+    if (e.which != 27 ||
+        /input|textarea/i.test(e.target.tagName)) {
+      return;
+    }
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    clearMenus();
+  }
+
+  /**
+   * Clear all other open dropdown elements
+   * @param {Object} el clicked dom element
+   */
   const clearMenus = (e) => {
-    // TODO: What's this do?
     if (e && e.which === 3) return;
 
     Array.prototype.forEach.call(
       document.querySelectorAll(Selector.data),
       (drop) => {
-        // TODO: get parent, support target
-        drop.parentNode.classList.remove(ClassName.open);
+        const parent = getParent(drop);
+
+        if (!parent.classList.contains(ClassName.open)) return;
+
+        parent.classList.remove(ClassName.open);
       },
     );
   };
 
+  /**
+   * Get parent or controller element
+   * @param {Object} el clicked dom element
+   */
   const getParent = (el) => {
-    console.log('getting parent');
+    if (el.dataset.target) {
+      return document.querySelector(el.dataset.target);
+    }
 
     return el.parentNode;
   }
 
+  /**
+   * Toggle to show/hide dropdown item
+   * @param {Object} el clicked dom element
+   */
   const toggle = (element) => {
-    console.log(element);
     // Don't toggle if element is disabled
     if (element.classList.contains(ClassName.disabled) ||
         element.disabled) {
       return;
     }
 
-    const parent = element.parentNode; // TODO: get parent, support target
-    const isActive = parent.classList.contains(ClassName.Open);
+    const parent = getParent(element);
+    const isActive = parent.classList.contains(ClassName.open);
 
-    clearMenus();
+    if (options.clearOthers) clearMenus();
 
     if (!isActive) {
-      parent.classList.add('open');
+      parent.classList.add(ClassName.open);
+    } else {
+      parent.classList.remove(ClassName.open);
     }
-
   };
 
   /**
    * Constructor
-   * @param  {Object} el   Element of dropdown
-   * @param  {Object} opts list of options
+   * @param {Object} el   Element of dropdown
+   * @param {Object} opts list of options
    */
   const Constructor = (element, opts) => {
+    // Set options here
+    options = Utilities.grabOptions(Default, opts, element);
+
     // Show dropdown element on click
     element.addEventListener('click', (e) => {
       toggle(element);
+      e.stopPropagation();
     });
 
     // Allow forms to be handles
@@ -837,7 +877,13 @@ const Dropdown = (() => {
    * Handle conditions where dropdown would cler
    */
   const ClearListeners = () => {
+    // Handle off-click
+    document.addEventListener('click', clearMenus);
 
+    // Handle keypress – Esc for example
+    document.addEventListener('keydown', (e) => {
+      handleKeydown(e);
+    });
   };
 
   return {
@@ -845,6 +891,7 @@ const Dropdown = (() => {
      * Constructor. Binds listeners onto sidebar elements
      */
     bind: () => {
+      ClearListeners();
       // Bind toggling
       Array.prototype.forEach.call(
         document.querySelectorAll(Selector.data),
@@ -854,8 +901,8 @@ const Dropdown = (() => {
 
     /**
      * Manually Assign
-     * @param  {Object} sidebar Element to bind to
-     * @param  {Object} options Options to override ()
+     * @param {Object} sidebar Element to bind to
+     * @param {Object} options Options to override ()
      */
     init: (el, opts) => () => {
       Constructor(el, opts);
@@ -869,6 +916,7 @@ runner.push(Dropdown.bind);
 /**
  * TODO:
  * - ARIA
- * - getParent method
+ * - handle up/down
+ * - handle boxClickClose etc
  * - backdrop for mobile (whats this)
  */
