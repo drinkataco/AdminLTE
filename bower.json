@@ -5,7 +5,7 @@
     "Abdullah Almsaeed <abdullah@almsaeedstudio.com>",
     "Josh Walwyn <me@joshwalwyn.com>"
   ],
-  "description": "Admin dashboard and control panel template",
+  "description": "Lite Version of AdminLTE – Without most plugins, including jQuery. No Changes have been made to the CSS!",
   "keywords": [
     "css",
     "js",
@@ -26,10 +26,8 @@
     "documentation"
   ],
   "dependencies": {
-    "bootstrap-slider": "*",
     "bootstrap": "^3.3.7",
     "font-awesome": "^4.7.0",
-    "Ionicons": "ionicons#^2.0.1",
     "velocity": "^1.5.0"
   }
 }
