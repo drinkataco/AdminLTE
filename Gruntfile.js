@@ -129,16 +129,11 @@ module.exports = function (grunt) { // jshint ignore:line
           'build/js/Tree.js',
           'build/js/PushMenu.js',
           'build/js/Layout.js',
-          'build/js/Dropdown.js',
-          'build/js/Modal.js',
           // 'build/js/BoxRefresh.js',
           // 'build/js/BoxWidget.js',
           // 'build/js/ControlSidebar.js',
           // 'build/js/DirectChat.js',
-          // 'build/js/Layout.js',
-          // 'build/js/PushMenu.js',
           // 'build/js/TodoList.js',
-          // 'build/js/Tree.js'
         ],
         dest: 'dist/js/adminlite.js'
       }
