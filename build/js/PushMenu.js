@@ -167,8 +167,8 @@ const PushMenu = (() => {
 
   /**
    * Binds Listeners to DOM
-   * @param  {Object} el   The main sidebar element
-   * @param  {Object} opts list of options
+   * @param {Object} el   The main sidebar element
+   * @param {Object} opts list of options
    */
   const Constructor = (el, opts) => {
     // Set options here

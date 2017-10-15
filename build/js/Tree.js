@@ -48,6 +48,15 @@ const Tree = (() => {
   };
 
   /**
+   * Custom Events
+   * @type {Object}
+   */
+  const Event = {
+    expanded: 'tree_expanded',
+    collapsed: 'tree_collapsed',
+  };
+
+  /**
    * Contextual Options
    */
   let options;
@@ -74,7 +83,7 @@ const Tree = (() => {
         duration: options.animationSpeed,
       }).then(() => {
         // Call custom event to indicate collapse
-        element.dispatchEvent(new CustomEvent('tree_collapsed'));
+        element.dispatchEvent(new CustomEvent(Event.collapsed));
       });
     });
   };
@@ -107,7 +116,7 @@ const Tree = (() => {
       duration: options.animationSpeed,
     }).then(() => {
       // Call custom event to indicate expansion
-      element.dispatchEvent(new CustomEvent('tree_expanded'));
+      element.dispatchEvent(new CustomEvent(Event.expanded));
     });
   };
 
