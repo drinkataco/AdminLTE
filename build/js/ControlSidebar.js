@@ -156,6 +156,7 @@ const ControlSidebar = (() => {
         button => ControlSidebar.init(button),
       );
     },
+
     /**
      * Manually Assign
      * @param  {Object} sidebar Element to bind to
@@ -170,6 +171,11 @@ const ControlSidebar = (() => {
         },
       );
     },
+
+    /**
+     * Public method proxies
+     */
+    fix: () => fix(),
   };
 })();
 

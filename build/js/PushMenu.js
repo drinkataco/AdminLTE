@@ -228,12 +228,18 @@ const PushMenu = (() => {
         button => Constructor(button),
       );
     },
+
     /**
      * Manually Assign
      * @param  {Object} sidebar Element to bind to
      * @param  {Object} options Options to override ()
      */
     init: (sidebar, opts) => Constructor(sidebar, opts),
+
+    /**
+     * Public method proxies
+     */
+    expandOnHover: () => expandOnHover(),
   };
 })();
 

@@ -187,7 +187,7 @@ const Layout = (() => {
   };
 
   /**
-   *
+   * Constructor
    */
   const Constructor = () => {
     // get body element from DOM
@@ -204,6 +204,12 @@ const Layout = (() => {
      * Constructor. Binds listeners onto sidebar elements
      */
     bind: () => Constructor(),
+
+    /**
+     * Public method proxies
+     */
+    fixSidebar: () => fixSidebar(),
+    active: () => activate(),
   };
 })();
 
