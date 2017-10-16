@@ -13,9 +13,6 @@ null==d?void 0:d))},attrHooks:{type:{set:function(a,b){if(!o.radioValue&&"radio"
 $(function() {
   'use strict'
 
-  var $pushMenu = PushMenu;
-  var $controlSidebar = ControlSidebar;
-  var $layout = Layout;
 
   /**
    * List of all the available skins
@@ -73,12 +70,12 @@ $(function() {
    */
   function changeLayout(cls) {
     $('body').toggleClass(cls)
-    $layout.fixSidebar()
+    Layout.fixSidebar()
     if ($('body').hasClass('fixed') && cls == 'fixed') {
-      $pushMenu.expandOnHover()
-      $layout.activate()
+      PushMenu.expandOnHover()
+      Layout.activate()
     }
-    $controlSidebar.fix()
+    ControlSidebar.fix()
   }
 
   /**
@@ -121,9 +118,9 @@ $(function() {
 
     $('[data-controlsidebar]').on('click', function () {
       changeLayout($(this).data('controlsidebar'))
-      var slide = !$controlSidebar.options.slide
+      var slide = !ControlSidebar.options.slide
 
-      $controlSidebar.options.slide = slide
+      ControlSidebar.options.slide = slide
       if (!slide)
         $('.control-sidebar').removeClass('control-sidebar-open')
     })
@@ -141,7 +138,7 @@ $(function() {
 
     $('[data-enable="expandOnHover"]').on('click', function () {
       $(this).attr('disabled', true)
-      $pushMenu.expandOnHover()
+      PushMenu.expandOnHover()
       if (!$('body').hasClass('sidebar-collapse'))
         $('[data-layout="sidebar-collapse"]').click()
     })
