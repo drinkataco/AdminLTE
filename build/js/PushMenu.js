@@ -1,211 +1,68 @@
+/* global runner */
+/* global Utilities */
+
 /* PushMenu()
  * ==========
  * Adds the push menu functionality to the sidebar.
  *
- * @Usage: PushMenu.init(element, options)
+ * @Usage: new PushMenu(element, options)
  *         Add [data-widget="push-menu"] to the ul element
  *         Pass any option as data-option-name="value"
  */
-/* global runner */
-/* global Utilities */
-const PushMenu = (() => {
+class PushMenu {
   /**
-   * Default Options
-   * @type {Object}
+   * Binds listeners onto sidebar elements
    */
-  const Default = {
-    collapseScreenSize: 767,
-    expandOnHover: false,
-    expandTransitionDelay: 0,
-  };
-
-  /**
-   * Selectors for query selections
-   * @type {Object}
-   */
-  const Selector = {
-    button: '[data-toggle="push-menu"]',
-    mainLogo: '.main-header .logo',
-    searchInput: '.sidebar-form .form-control',
-  };
-
-  /**
-   * DOM Class NAmes
-   * @type {Object}
-   */
-  const ClassName = {
-    collapsed: 'sidebar-collapse',
-    open: 'sidebar-open',
-    mainSidebar: 'main-sidebar',
-    mini: 'sidebar-mini',
-    contentWrapper: 'content-wrapper',
-    layoutFixed: 'fixed',
-    expanded: 'sidebar-expanded-on-hover',
-    expandFeature: 'sidebar-mini-expand-feature',
-  };
-
-  /**
-   * Window width for distinguishing mobile
-   */
-  let windowWidth;
-
-  /**
-   * User defined options
-   */
-  let options = {};
-
-  /**
-   * Main html body element
-   */
-  let body;
-
-  /**
-   * Main controller element for menu
-   */
-  let element;
-
-  /**
-   * Expand with time delay via mouseover hover
-   */
-  const expand = () => {
-    setTimeout(() => {
-      body.classList.remove(ClassName.collapsed);
-      body.classList.add(ClassName.expanded);
-    }, options.expandTransitionDelay);
-  };
-
-  /**
-   * Collapse with time delay via mouseout hover
-   */
-  const collapse = () => {
-    setTimeout(() => {
-      body.classList.remove(ClassName.expanded);
-      body.classList.add(ClassName.collapsed);
-    }, options.expandTransitionDelay);
-  };
-
-  /**
-   * Bind mouseover and mouseleave events to colapse/expand sidebar
-   */
-  const expandOnHover = () => {
+  static bind() {
     Array.prototype.forEach.call(
-      document.getElementsByClassName(ClassName.mainSidebar),
-      (context) => {
-        context.addEventListener('mouseover', () => {
-          // Handle Expansion
-          if (body.classList.contains(ClassName.mini) &&
-              body.classList.contains(ClassName.collapsed) &&
-              windowWidth > options.collapseScreenSize) {
-            expand();
-          }
-        });
-
-        // handle Close the sidebar
-        context.addEventListener('mouseleave', () => {
-          if (body.classList.contains(ClassName.expanded)) {
-            collapse();
-          }
-        });
-      },
+      document.querySelectorAll(PushMenu.Selector.button),
+      button => new PushMenu(button),
     );
-  };
-
-  /**
-   * Open the sidebar
-   */
-  const open = () => {
-    if (windowWidth > options.collapseScreenSize) {
-      body.classList.remove(ClassName.collapsed);
-    } else {
-      body.classList.add(ClassName.open);
-    }
-  };
-
-  /**
-   * Close the sidebar
-   */
-  const close = () => {
-    if (windowWidth > options.collapseScreenSize) {
-      body.classList.remove(ClassName.expanded);
-      body.classList.add(ClassName.collapsed);
-    } else {
-      body.classList.remove(ClassName.open);
-      body.classList.remove(ClassName.collapsed);
-    }
-  };
-
-  /**
-   * Toggle sidebar open/close
-   */
-  const toggle = () => {
-    let isOpen = !body.classList.contains(ClassName.collapsed);
-
-    if (windowWidth <= options.collapseScreenSize) {
-      isOpen = body.classList.contains(ClassName.open);
-    }
-
-    if (!isOpen) {
-      open();
-    } else {
-      close();
-    }
-  };
-
-  /**
-   * Binds an event listener to each parent menu element
-   * @return {Object}
-   */
-  const setUpListeners = () => {
-    element.addEventListener('click', (event) => {
-      // And contextual Window Width
-      windowWidth = window.innerWidth;
-
-      event.preventDefault();
-      toggle();
-    });
-  };
+  }
 
   /**
    * Binds Listeners to DOM
    * @param {Object} el   The main sidebar element
    * @param {Object} opts list of options
    */
-  const Constructor = (el, opts) => {
-    // Set options here
-    options = Utilities.grabOptions(Default, opts, el);
-
+  constructor(element, options) {
     // Add parameters to global scope
-    element = el;
+    this.Default = PushMenu.Default;
+    this.ClassName = PushMenu.ClassName;
+    this.Selector = PushMenu.Selector;
+    this.element = element;
 
     // And  Window Width
-    windowWidth = window.innerWidth;
+    this.windowWidth = window.innerWidth;
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
     // Get main page body element
-    const { 0: b } = document.getElementsByTagName('body');
-    body = b;
+    this.body = document.querySelector('body');
 
     // Add Listeners to expand/collapse sidebar on hover
-    if (options.expandOnHover ||
-        (body.classList.contains(ClassName.mini) &&
-         body.classList.contains(ClassName.layoutFixed))) {
-      expandOnHover();
-      body.classList.add(ClassName.expandFeature);
+    if (this.options.expandOnHover ||
+        (this.body.classList.contains(this.ClassName.mini) &&
+         this.body.classList.contains(this.ClassName.layoutFixed))) {
+      this.expandOnHover();
+      this.body.classList.add(this.ClassName.expandFeature);
     }
 
     // Enable hide menu when clicking on the content-wrapper on small screens
-    body.getElementsByClassName(ClassName.contentWrapper)[0]
+    this.body.getElementsByClassName(this.ClassName.contentWrapper)[0]
       .addEventListener(
         'click',
         () => {
-          if (windowWidth <= options.collapseScreenSize &&
-              body.classList.contains(ClassName.open)) {
-            close();
+          if (this.windowWidth <= options.collapseScreenSize &&
+            this.body.classList.contains(this.ClassName.open)) {
+            this.close();
           }
         },
       );
 
     // Fix for android devices
-    body.querySelector(Selector.searchInput)
+    this.body.querySelector(this.Selector.searchInput)
       .addEventListener(
         'click',
         (e) => {
@@ -215,32 +72,143 @@ const PushMenu = (() => {
 
 
     // Bind functionality to close/open sidebar
-    setUpListeners();
-  };
+    this.setUpListeners();
+  }
 
-  return {
-    /**
-     * Constructor. Binds listeners onto sidebar elements
-     */
-    bind: () => {
-      Array.prototype.forEach.call(
-        document.querySelectorAll(Selector.button),
-        button => Constructor(button),
-      );
-    },
+  /**
+   * Binds an event listener to each parent menu element
+   */
+  setUpListeners() {
+    this.element.addEventListener('click', (event) => {
+      // And contextual Window Width
+      this.windowWidth = window.innerWidth;
 
-    /**
-     * Manually Assign
-     * @param  {Object} sidebar Element to bind to
-     * @param  {Object} options Options to override ()
-     */
-    init: (sidebar, opts) => Constructor(sidebar, opts),
+      event.preventDefault();
+      this.toggle();
+    });
+  }
 
-    /**
-     * Public method proxies
-     */
-    expandOnHover: () => expandOnHover(),
-  };
-})();
+  /**
+   * Toggle sidebar open/close
+   */
+  toggle() {
+    let isOpen = !this.body.classList.contains(this.ClassName.collapsed);
+
+    if (this.windowWidth <= this.options.collapseScreenSize) {
+      isOpen = this.body.classList.contains(this.ClassName.open);
+    }
+
+    if (!isOpen) {
+      this.open();
+    } else {
+      this.close();
+    }
+  }
+
+  /**
+   * Open the sidebar
+   */
+  open() {
+    if (this.windowWidth > this.options.collapseScreenSize) {
+      this.body.classList.remove(this.ClassName.collapsed);
+    } else {
+      this.body.classList.add(this.ClassName.open);
+    }
+  }
+
+  /**
+   * Close the sidebar
+   */
+  close() {
+    if (this.windowWidth > this.options.collapseScreenSize) {
+      this.body.classList.remove(this.ClassName.expanded);
+      this.body.classList.add(this.ClassName.collapsed);
+    } else {
+      this.body.classList.remove(this.ClassName.open);
+      this.body.classList.remove(this.ClassName.collapsed);
+    }
+  }
+
+  /**
+   * Expand with time delay via mouseover hover
+   */
+  expand() {
+    window.setTimeout(() => {
+      this.body.classList.remove(this.ClassName.collapsed);
+      this.body.classList.add(this.ClassName.expanded);
+    }, this.options.expandTransitionDelay);
+  }
+
+  /**
+   * Collapse with time delay via mouseout hover
+   */
+  collapse() {
+    window.setTimeout(() => {
+      this.body.classList.remove(this.ClassName.expanded);
+      this.body.classList.add(this.ClassName.collapsed);
+    }, this.options.expandTransitionDelay);
+  }
+
+  /**
+   * Bind mouseover and mouseleave events to colapse/expand sidebar
+   */
+  expandOnHover() {
+    Array.prototype.forEach.call(
+      document.getElementsByClassName(this.ClassName.mainSidebar),
+      (context) => {
+        context.addEventListener('mouseover', () => {
+          // Handle Expansion
+          if (this.body.classList.contains(this.ClassName.mini) &&
+              this.body.classList.contains(this.ClassName.collapsed) &&
+              this.windowWidth > this.options.collapseScreenSize) {
+            this.expand();
+          }
+        });
+
+        // handle Close the sidebar
+        context.addEventListener('mouseleave', () => {
+          if (this.body.classList.contains(this.ClassName.expanded)) {
+            this.collapse();
+          }
+        });
+      },
+    );
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+PushMenu.Default = {
+  collapseScreenSize: 767,
+  expandOnHover: false,
+  expandTransitionDelay: 0,
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+PushMenu.Selector = {
+  button: '[data-toggle="push-menu"]',
+  mainLogo: '.main-header .logo',
+  searchInput: '.sidebar-form .form-control',
+};
+
+/**
+ * DOM Class NAmes
+ * @type {Object}
+ */
+PushMenu.ClassName = {
+  collapsed: 'sidebar-collapse',
+  open: 'sidebar-open',
+  mainSidebar: 'main-sidebar',
+  mini: 'sidebar-mini',
+  contentWrapper: 'content-wrapper',
+  layoutFixed: 'fixed',
+  expanded: 'sidebar-expanded-on-hover',
+  expandFeature: 'sidebar-mini-expand-feature',
+};
 
 runner.push(PushMenu.bind);

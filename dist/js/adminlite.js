@@ -79,6 +79,10 @@ Utilities.grabOptions = (def, current, element, fields) => {
 };
 
 
+/* global runner */
+/* global Velocity */
+/* global Utilities */
+
 /* Tree()
  * ======
  * Converts a nested list into a multilevel
@@ -88,163 +92,20 @@ Utilities.grabOptions = (def, current, element, fields) => {
  *
  * Adapted from Admin LTE Sidebar.js jQuery Plugin
  *
- * @Usage: Tree.init(element, options)
+ * @Usage: new Tree(element, options)
  *         Add [data-widget="tree"] to the ul element
  *         Pass any option as data-option-name="value"
  */
-/* global runner */
-/* global Velocity */
-/* global Utilities */
-const Tree = (() => {
+class Tree {
   /**
-   * Default Options
-   * @type {Object}
+   * Binds listeners onto sidebar elements
    */
-  const Default = {
-    animationSpeed: 300,
-    accordion: true,
-    followLink: true,
-    trigger: '.treeview a',
-    easing: 'easeInSine',
-  };
-
-  /**
-   * Selectors for query selections
-   * @type {Object}
-   */
-  const Selector = {
-    data: '[data-widget="tree"]',
-    activeTreeview: '.treeview.active',
-  };
-
-  /**
-   * DOM Class Names
-   * @type {Object}
-   */
-  const ClassName = {
-    open: 'menu-open',
-    tree: 'tree',
-    treeview: 'treeview',
-    treeviewMenu: 'treeview-menu',
-  };
-
-  /**
-   * Custom Events
-   * @type {Object}
-   */
-  const Event = {
-    expanded: 'tree_expanded',
-    collapsed: 'tree_collapsed',
-  };
-
-  /**
-   * Contextual Options
-   */
-  let options;
-
-  /**
-   * Contextual Element
-   */
-  let element;
-
-  /**
-   * Collapse element
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
-   */
-  const collapse = (tree, parentLi) => {
-    parentLi.classList.remove(ClassName.open);
-
-    const treeLocal = tree;
-
-    Array.prototype.forEach.call(treeLocal, (t) => {
-      const treeItem = t;
-      Velocity(treeItem, 'slideUp', {
-        easing: options.easing,
-        duration: options.animationSpeed,
-      }).then(() => {
-        // Call custom event to indicate collapse
-        element.dispatchEvent(new CustomEvent(Event.collapsed));
-      });
-    });
-  };
-
-  /**
-   * Expand menu selection, and close all siblings
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
-   */
-  const expand = (tree, parentLi) => {
-    // We need to access direct siblings to support multilevel menus remaining open
-    const openMenus = Utilities.findChildren('LI', ClassName.open, parentLi.parentNode);
-
-    // For each currently opened menu (which should be just 1) we should close
-    if (options.accordion) {
-      Array.prototype.forEach.call(openMenus, (menu) => {
-        const openTree = Utilities.findChildren('UL', ClassName.treeviewMenu, menu);
-
-        // Collapse
-        collapse(openTree, menu);
-      });
-    }
-
-    // Open this menu
-    parentLi.classList.add(ClassName.open);
-
-    const firstTree = tree[0]; // Only the direct descendant needs to be closed
-    Velocity(firstTree, 'slideDown', {
-      easing: options.easing,
-      duration: options.animationSpeed,
-    }).then(() => {
-      // Call custom event to indicate expansion
-      element.dispatchEvent(new CustomEvent(Event.expanded));
-    });
-  };
-
-  /**
-   * Handle show/hide of collapsible menus
-   * @param  {Object} link  The link element clicked
-   * @param  {Object} event The Triggered Event
-   */
-  const toggle = (link, event) => {
-    // Get contextual DOM elements
-    const parentLi = link.parentNode;
-    const isOpen = parentLi.classList.contains(ClassName.open);
-    const treeviewMenu = Utilities.findChildren('UL', ClassName.treeviewMenu, parentLi);
-
-    // Stop if not a menu tree
-    if (!parentLi.classList.contains(ClassName.treeview)) {
-      return;
-    }
-
-    // Stop link follow
-    if (!options.followLink || link.getAttribute('href') === '#') {
-      event.preventDefault();
-    }
-
-    // Open or close depending on current statw
-    if (isOpen) {
-      collapse(treeviewMenu, parentLi);
-    } else {
-      expand(treeviewMenu, parentLi);
-    }
-  };
-
-  /**
-   * Binds an event listener to each parent menu element
-   * @return {Object}
-   */
-  const setUpListeners = () => {
-    // Binds a click event listener for each element
+  static bind() {
     Array.prototype.forEach.call(
-      element.querySelectorAll(options.trigger),
-      (context) => {
-        context.addEventListener('click', (event) => {
-          toggle(context, event);
-        });
-      },
+      document.querySelectorAll(Tree.Selector.data),
+      element => new Tree(element),
     );
-  };
+  }
 
   /**
    * Opens existing active element(s) and calls method to bind
@@ -252,255 +113,238 @@ const Tree = (() => {
    * @param  {Object} el   The main sidebar element
    * @param  {Object} opts list of options
    */
-  const Constructor = (el, opts) => {
-    // Set options here
-    options = Utilities.grabOptions(Default, opts, el);
-
+  constructor(element, options) {
     // Add parameters to global scope
-    element = el;
-    element.classList.add(ClassName.tree);
+    this.Default = Tree.Default;
+    this.ClassName = Tree.ClassName;
+    this.Selector = Tree.Selector;
+    this.Event = Tree.Event;
+    this.element = element;
+    this.element.classList.add(this.ClassName.tree);
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
     // Open menu for active element
-    const active = element.querySelector(Selector.activeTreeview);
+    const active = this.element.querySelector(this.Selector.activeTreeview);
 
     if (active !== null) {
-      active.classList.add(ClassName.open);
+      active.classList.add(this.ClassName.open);
     }
 
     // bind listeners
-    setUpListeners();
-  };
-
-  return {
-    /**
-     * Constructor. Binds listeners onto sidebar elements
-     */
-    bind: () => {
-      Array.prototype.forEach.call(
-        document.querySelectorAll(Selector.data),
-        sidebar => Constructor(sidebar),
-      );
-    },
-    /**
-     * Manually Assign
-     * @param {Object} sidebar Element to bind to
-     * @param {Object} options Options to override ()
-     */
-    init: (sidebar, opts) => Constructor(sidebar, opts),
-  };
-})();
-
-runner.push(Tree.bind);
-
-
-/* PushMenu()
- * ==========
- * Adds the push menu functionality to the sidebar.
- *
- * @Usage: PushMenu.init(element, options)
- *         Add [data-widget="push-menu"] to the ul element
- *         Pass any option as data-option-name="value"
- */
-/* global runner */
-/* global Utilities */
-const PushMenu = (() => {
-  /**
-   * Default Options
-   * @type {Object}
-   */
-  const Default = {
-    collapseScreenSize: 767,
-    expandOnHover: false,
-    expandTransitionDelay: 0,
-  };
-
-  /**
-   * Selectors for query selections
-   * @type {Object}
-   */
-  const Selector = {
-    button: '[data-toggle="push-menu"]',
-    mainLogo: '.main-header .logo',
-    searchInput: '.sidebar-form .form-control',
-  };
-
-  /**
-   * DOM Class NAmes
-   * @type {Object}
-   */
-  const ClassName = {
-    collapsed: 'sidebar-collapse',
-    open: 'sidebar-open',
-    mainSidebar: 'main-sidebar',
-    mini: 'sidebar-mini',
-    contentWrapper: 'content-wrapper',
-    layoutFixed: 'fixed',
-    expanded: 'sidebar-expanded-on-hover',
-    expandFeature: 'sidebar-mini-expand-feature',
-  };
-
-  /**
-   * Window width for distinguishing mobile
-   */
-  let windowWidth;
-
-  /**
-   * User defined options
-   */
-  let options = {};
-
-  /**
-   * Main html body element
-   */
-  let body;
-
-  /**
-   * Main controller element for menu
-   */
-  let element;
-
-  /**
-   * Expand with time delay via mouseover hover
-   */
-  const expand = () => {
-    setTimeout(() => {
-      body.classList.remove(ClassName.collapsed);
-      body.classList.add(ClassName.expanded);
-    }, options.expandTransitionDelay);
-  };
-
-  /**
-   * Collapse with time delay via mouseout hover
-   */
-  const collapse = () => {
-    setTimeout(() => {
-      body.classList.remove(ClassName.expanded);
-      body.classList.add(ClassName.collapsed);
-    }, options.expandTransitionDelay);
-  };
-
-  /**
-   * Bind mouseover and mouseleave events to colapse/expand sidebar
-   */
-  const expandOnHover = () => {
-    Array.prototype.forEach.call(
-      document.getElementsByClassName(ClassName.mainSidebar),
-      (context) => {
-        context.addEventListener('mouseover', () => {
-          // Handle Expansion
-          if (body.classList.contains(ClassName.mini) &&
-              body.classList.contains(ClassName.collapsed) &&
-              windowWidth > options.collapseScreenSize) {
-            expand();
-          }
-        });
-
-        // handle Close the sidebar
-        context.addEventListener('mouseleave', () => {
-          if (body.classList.contains(ClassName.expanded)) {
-            collapse();
-          }
-        });
-      },
-    );
-  };
-
-  /**
-   * Open the sidebar
-   */
-  const open = () => {
-    if (windowWidth > options.collapseScreenSize) {
-      body.classList.remove(ClassName.collapsed);
-    } else {
-      body.classList.add(ClassName.open);
-    }
-  };
-
-  /**
-   * Close the sidebar
-   */
-  const close = () => {
-    if (windowWidth > options.collapseScreenSize) {
-      body.classList.remove(ClassName.expanded);
-      body.classList.add(ClassName.collapsed);
-    } else {
-      body.classList.remove(ClassName.open);
-      body.classList.remove(ClassName.collapsed);
-    }
-  };
-
-  /**
-   * Toggle sidebar open/close
-   */
-  const toggle = () => {
-    let isOpen = !body.classList.contains(ClassName.collapsed);
-
-    if (windowWidth <= options.collapseScreenSize) {
-      isOpen = body.classList.contains(ClassName.open);
-    }
-
-    if (!isOpen) {
-      open();
-    } else {
-      close();
-    }
-  };
+    this.setUpListeners();
+  }
 
   /**
    * Binds an event listener to each parent menu element
    * @return {Object}
    */
-  const setUpListeners = () => {
-    element.addEventListener('click', (event) => {
-      // And contextual Window Width
-      windowWidth = window.innerWidth;
+  setUpListeners() {
+    // Binds a click event listener for each element
+    Array.prototype.forEach.call(
+      this.element.querySelectorAll(this.options.trigger),
+      (context) => {
+        context.addEventListener('click', (event) => {
+          this.toggle(context, event);
+        });
+      },
+    );
+  }
 
+  /**
+   * Handle show/hide of collapsible menus
+   * @param {Object} link  The link element clicked
+   * @param {Object} event The Triggered Event
+   */
+  toggle(link, event) {
+    // Get contextual DOM elements
+    const parentLi = link.parentNode;
+    const isOpen = parentLi.classList.contains(this.ClassName.open);
+    const treeviewMenu = Utilities.findChildren('UL', this.ClassName.treeviewMenu, parentLi);
+
+    // Stop if not a menu tree
+    if (!parentLi.classList.contains(this.ClassName.treeview)) {
+      return;
+    }
+
+    // Stop link follow
+    if (!this.options.followLink || link.getAttribute('href') === '#') {
       event.preventDefault();
-      toggle();
+    }
+
+    // Open or close depending on current statw
+    if (isOpen) {
+      this.collapse(treeviewMenu, parentLi);
+    } else {
+      this.expand(treeviewMenu, parentLi);
+    }
+  }
+
+  /**
+   * Collapse element
+   * @param  {Object} tree     The child tree/menu
+   * @param  {Object} parentLi The parent element that contains the tree
+   */
+  collapse(tree, parentLi) {
+    parentLi.classList.remove(this.ClassName.open);
+
+    const treeLocal = tree;
+
+    Array.prototype.forEach.call(treeLocal, (t) => {
+      const treeItem = t;
+      Velocity(treeItem, 'slideUp', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        // Call custom event to indicate collapse
+        this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+      });
     });
-  };
+  }
+
+  /**
+   * Expand menu selection, and close all siblings
+   * @param  {Object} tree     The child tree/menu
+   * @param  {Object} parentLi The parent element that contains the tree
+   */
+  expand(tree, parentLi) {
+    // We need to access direct siblings to support multilevel menus remaining open
+    const openMenus = Utilities.findChildren('LI', this.ClassName.open, parentLi.parentNode);
+
+    // For each currently opened menu (which should be just 1) we should close
+    if (this.options.accordion) {
+      Array.prototype.forEach.call(openMenus, (menu) => {
+        const openTree = Utilities.findChildren('UL', this.ClassName.treeviewMenu, menu);
+
+        // Collapse
+        this.collapse(openTree, menu);
+      });
+    }
+
+    // Open this menu
+    parentLi.classList.add(this.ClassName.open);
+
+    const firstTree = tree[0]; // Only the direct descendant needs to be closed
+    Velocity(firstTree, 'slideDown', {
+      easing: this.options.easing,
+      duration: this.options.animationSpeed,
+    }).then(() => {
+      // Call custom event to indicate expansion
+      this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+    });
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+Tree.Default = {
+  animationSpeed: 300,
+  accordion: true,
+  followLink: true,
+  trigger: '.treeview a',
+  easing: 'easeInSine',
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+Tree.Selector = {
+  data: '[data-widget="tree"]',
+  activeTreeview: '.treeview.active',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+Tree.ClassName = {
+  open: 'menu-open',
+  tree: 'tree',
+  treeview: 'treeview',
+  treeviewMenu: 'treeview-menu',
+};
+
+/**
+ * Custom Events
+ * @type {Object}
+ */
+Tree.Event = {
+  expanded: 'tree_expanded',
+  collapsed: 'tree_collapsed',
+};
+
+runner.push(Tree.bind);
+
+
+/* global runner */
+/* global Utilities */
+
+/* PushMenu()
+ * ==========
+ * Adds the push menu functionality to the sidebar.
+ *
+ * @Usage: new PushMenu(element, options)
+ *         Add [data-widget="push-menu"] to the ul element
+ *         Pass any option as data-option-name="value"
+ */
+class PushMenu {
+  /**
+   * Binds listeners onto sidebar elements
+   */
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(PushMenu.Selector.button),
+      button => new PushMenu(button),
+    );
+  }
 
   /**
    * Binds Listeners to DOM
    * @param {Object} el   The main sidebar element
    * @param {Object} opts list of options
    */
-  const Constructor = (el, opts) => {
-    // Set options here
-    options = Utilities.grabOptions(Default, opts, el);
-
+  constructor(element, options) {
     // Add parameters to global scope
-    element = el;
+    this.Default = PushMenu.Default;
+    this.ClassName = PushMenu.ClassName;
+    this.Selector = PushMenu.Selector;
+    this.element = element;
 
     // And  Window Width
-    windowWidth = window.innerWidth;
+    this.windowWidth = window.innerWidth;
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
     // Get main page body element
-    const { 0: b } = document.getElementsByTagName('body');
-    body = b;
+    this.body = document.querySelector('body');
 
     // Add Listeners to expand/collapse sidebar on hover
-    if (options.expandOnHover ||
-        (body.classList.contains(ClassName.mini) &&
-         body.classList.contains(ClassName.layoutFixed))) {
-      expandOnHover();
-      body.classList.add(ClassName.expandFeature);
+    if (this.options.expandOnHover ||
+        (this.body.classList.contains(this.ClassName.mini) &&
+         this.body.classList.contains(this.ClassName.layoutFixed))) {
+      this.expandOnHover();
+      this.body.classList.add(this.ClassName.expandFeature);
     }
 
     // Enable hide menu when clicking on the content-wrapper on small screens
-    body.getElementsByClassName(ClassName.contentWrapper)[0]
+    this.body.getElementsByClassName(this.ClassName.contentWrapper)[0]
       .addEventListener(
         'click',
         () => {
-          if (windowWidth <= options.collapseScreenSize &&
-              body.classList.contains(ClassName.open)) {
-            close();
+          if (this.windowWidth <= options.collapseScreenSize &&
+            this.body.classList.contains(this.ClassName.open)) {
+            this.close();
           }
         },
       );
 
     // Fix for android devices
-    body.querySelector(Selector.searchInput)
+    this.body.querySelector(this.Selector.searchInput)
       .addEventListener(
         'click',
         (e) => {
@@ -510,36 +354,144 @@ const PushMenu = (() => {
 
 
     // Bind functionality to close/open sidebar
-    setUpListeners();
-  };
+    this.setUpListeners();
+  }
 
-  return {
-    /**
-     * Constructor. Binds listeners onto sidebar elements
-     */
-    bind: () => {
-      Array.prototype.forEach.call(
-        document.querySelectorAll(Selector.button),
-        button => Constructor(button),
-      );
-    },
+  /**
+   * Binds an event listener to each parent menu element
+   */
+  setUpListeners() {
+    this.element.addEventListener('click', (event) => {
+      // And contextual Window Width
+      this.windowWidth = window.innerWidth;
 
-    /**
-     * Manually Assign
-     * @param  {Object} sidebar Element to bind to
-     * @param  {Object} options Options to override ()
-     */
-    init: (sidebar, opts) => {
-      Constructor(sidebar, opts);
-      return this;
-    },
+      event.preventDefault();
+      this.toggle();
+    });
+  }
 
-    /**
-     * Public method proxies
-     */
-    expandOnHover: () => expandOnHover(),
-  };
-})();
+  /**
+   * Toggle sidebar open/close
+   */
+  toggle() {
+    let isOpen = !this.body.classList.contains(this.ClassName.collapsed);
+
+    if (this.windowWidth <= this.options.collapseScreenSize) {
+      isOpen = this.body.classList.contains(this.ClassName.open);
+    }
+
+    if (!isOpen) {
+      this.open();
+    } else {
+      this.close();
+    }
+  }
+
+  /**
+   * Open the sidebar
+   */
+  open() {
+    if (this.windowWidth > this.options.collapseScreenSize) {
+      this.body.classList.remove(this.ClassName.collapsed);
+    } else {
+      this.body.classList.add(this.ClassName.open);
+    }
+  }
+
+  /**
+   * Close the sidebar
+   */
+  close() {
+    if (this.windowWidth > this.options.collapseScreenSize) {
+      this.body.classList.remove(this.ClassName.expanded);
+      this.body.classList.add(this.ClassName.collapsed);
+    } else {
+      this.body.classList.remove(this.ClassName.open);
+      this.body.classList.remove(this.ClassName.collapsed);
+    }
+  }
+
+  /**
+   * Expand with time delay via mouseover hover
+   */
+  expand() {
+    window.setTimeout(() => {
+      this.body.classList.remove(this.ClassName.collapsed);
+      this.body.classList.add(this.ClassName.expanded);
+    }, this.options.expandTransitionDelay);
+  }
+
+  /**
+   * Collapse with time delay via mouseout hover
+   */
+  collapse() {
+    window.setTimeout(() => {
+      this.body.classList.remove(this.ClassName.expanded);
+      this.body.classList.add(this.ClassName.collapsed);
+    }, this.options.expandTransitionDelay);
+  }
+
+  /**
+   * Bind mouseover and mouseleave events to colapse/expand sidebar
+   */
+  expandOnHover() {
+    Array.prototype.forEach.call(
+      document.getElementsByClassName(this.ClassName.mainSidebar),
+      (context) => {
+        context.addEventListener('mouseover', () => {
+          // Handle Expansion
+          if (this.body.classList.contains(this.ClassName.mini) &&
+              this.body.classList.contains(this.ClassName.collapsed) &&
+              this.windowWidth > this.options.collapseScreenSize) {
+            this.expand();
+          }
+        });
+
+        // handle Close the sidebar
+        context.addEventListener('mouseleave', () => {
+          if (this.body.classList.contains(this.ClassName.expanded)) {
+            this.collapse();
+          }
+        });
+      },
+    );
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+PushMenu.Default = {
+  collapseScreenSize: 767,
+  expandOnHover: false,
+  expandTransitionDelay: 0,
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+PushMenu.Selector = {
+  button: '[data-toggle="push-menu"]',
+  mainLogo: '.main-header .logo',
+  searchInput: '.sidebar-form .form-control',
+};
+
+/**
+ * DOM Class NAmes
+ * @type {Object}
+ */
+PushMenu.ClassName = {
+  collapsed: 'sidebar-collapse',
+  open: 'sidebar-open',
+  mainSidebar: 'main-sidebar',
+  mini: 'sidebar-mini',
+  contentWrapper: 'content-wrapper',
+  layoutFixed: 'fixed',
+  expanded: 'sidebar-expanded-on-hover',
+  expandFeature: 'sidebar-mini-expand-feature',
+};
 
 runner.push(PushMenu.bind);
 
@@ -948,71 +900,48 @@ runner.push(ControlSidebar.bind);
 
 /* global runner */
 /* global Utilities */
-const BoxRefresh = (() => {
-  /**
-   * Default Options
-   * @type {Object}
-   */
-  const Default = {};
-
-  /**
-   * Selectors for query selections
-   * @type {Object}
-   */
-  const Selector = {}
-
-  /**
-   * DOM Class Names
-   * @type {Object}
-   */
-  const ClassName = {}
-
-  /**
-   * Contextual Options
-   */
-  let options;
-
-  /**
-   * Contextual Element
-   */
-  let element;
-
-  return {
-    /**
-     * Constructor. Binds listeners onto elements
-     */
-    bind: () => {},
-    /**
-     * Manually Assign
-     * @param {Object} el Element to bind to
-     * @param {Object} opts Options to override ()
-     */
-    init: (el, opts) => {},
-  };
-})();
-
-runner.push(BoxRefresh.bind);
-
-/* global runner */
-/* global Utilities */
 const BoxWidget = (() => {
   /**
    * Default Options
    * @type {Object}
    */
-  const Default = {};
+  const Default = {
+    animationSpeed: 500,
+    collapseTrigger: '[data-widget="collapse"]',
+    removeTrigger: '[data-widget="remove"]',
+    collapseIcon: 'fa-minus',
+    expandIcon: 'fa-plus',
+    removeIcon: 'fa-times',
+  };
 
   /**
    * Selectors for query selections
    * @type {Object}
    */
-  const Selector = {}
+  const Selector = {
+    collapsed: '.collapsed-box',
+    body: '.box-body',
+    footer: '.box-footer',
+    tools: '.box-tools',
+  };
 
   /**
    * DOM Class Names
    * @type {Object}
    */
-  const ClassName = {}
+  const ClassName = {
+    collapsed: 'collapsed-box',
+  };
+
+  /**
+   * [Event description]
+   * @type {Object}
+   */
+  const Event = {
+    collapsed: 'collapsed.boxwidget',
+    expanded: 'expanded.boxwidget',
+    removed: 'removed.boxwidget',
+  }
 
   /**
    * Contextual Options
@@ -1024,11 +953,36 @@ const BoxWidget = (() => {
    */
   let element;
 
+  /**
+   * Binds Listeners to DOM
+   * @param {Object} el   The main sidebar element
+   * @param {Object} opts list of options
+   */
+  const Constructor = (el, opts) => {
+    // Set options here
+    options = Utilities.grabOptions(Default, opts, el);
+
+    // Add parameters to global scope
+    element = el;
+
+    const collapsers = element.querySelector(options.collapseTrigger);
+    Array.prototype.forEach.call(
+      collapsers,
+      (e) => {
+        e.preventDefault();
+
+      }
+    ).bind(this);
+
+  };
+
   return {
     /**
      * Constructor. Binds listeners onto elements
      */
-    bind: () => {},
+    bind: () => {
+
+    },
     /**
      * Manually Assign
      * @param {Object} el Element to bind to
