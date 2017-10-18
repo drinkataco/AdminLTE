@@ -1,3 +1,7 @@
+/* global runner */
+/* global Utilities */
+/* global Tree */
+
 /* Layout()
  * ========
  * Implements AdminLTE layout.
@@ -11,68 +15,77 @@
  *        Configure any options by passing data-option="value"
  *        to the body tag.
  */
-/* global runner */
-/* global Utilities */
-const Layout = (() => {
+class Layout {
   /**
-   * Default Options
-   * @type {Object}
+   * Constructor
    */
-  const Default = {
-    resetHeight: true,
-    transitionEnabled: true,
-  };
+  constructor() {
+    // set defaults
+    this.Default = Layout.Default;
+    this.Selector = Layout.Selector;
+    this.ClassName = Layout.ClassName;
+    this.blindedResize = false; // Bind layout methods to resizing
+    // get body element from DOM
+    this.element = document.querySelector('body');
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, null, this.element);
+
+    this.activate();
+  }
 
   /**
-   * Selectors for query selections
-   * @type {Object}
+   * Actives layout methods
    */
-  const Selector = {
-    heightReset: 'body, html, .wrapper',
-    wrapper: '.wrapper',
-    sidebar: '.sidebar',
-    logo: '.main-header .logo',
-    layoutBoxed: '.layout-boxed',
-    sidebarMenu: '.sidebar-menu',
-    mainFooter: '.main-footer',
-    mainHeader: '.main-header',
-    contentWrapper: '.content-wrapper',
-    controlSidebar: '.control-sidebar',
-  };
+  activate() {
+    this.fixLayout();
+
+    if (this.options.transitionEnabled) {
+      this.element.classList.remove(this.ClassName.holdTransition);
+    }
+
+    // Reset main wrapper elements
+    if (this.options.resetHeight) {
+      const elements = document.querySelectorAll(this.Selector.heightReset);
+
+      Array.prototype.forEach.call(elements, (el) => {
+        const elC = el;
+        elC.style.height = 'auto';
+        elC.style.minHeight = '100%';
+      });
+    }
+
+    // Resize when window is resized
+    if (!this.bindedResize) {
+      window.addEventListener('resize', this.fixLayout.bind(this));
+
+      const elLogo = document.querySelector(this.Selector.logo);
+      const elSidebar = document.querySelector(this.ClassName.sidebar);
+
+      if (elLogo) elLogo.addEventListener('transitionend', this.fixLayout.bind(this));
+      if (elSidebar) elSidebar.addEventListener('transitionend', this.fixLayout.bind(this));
+
+      this.bindedResize = true;
+    }
+
+    // If sidebar menu has expanded options, ensure layout is recalculated
+    const sidebarMenu = document.querySelector(this.Selector.sidebarMenu);
+
+    if (sidebarMenu) {
+      sidebarMenu.addEventListener(Tree.Event.expanded, this.fixLayout.bind(this));
+      sidebarMenu.addEventListener(Tree.Event.collapsed, this.fixLayout.bind(this));
+    }
+  }
 
   /**
-   * DOM Class Names
-   * @type {Object}
+   * Fix content height so it fills the page
    */
-  const ClassName = {
-    holdTransition: 'hold-transition',
-    fixed: 'fixed',
-  };
-
-  /**
-   * Contextual Options
-   */
-  let options;
-
-  /**
-   * Contextual Element
-   */
-  let element;
-
-  /**
-   * Bind layout methods to resizing
-   */
-  let bindedResize = false;
-
-  /**
-   *  Fix content height so it fills the page
-   */
-  const fix = () => {
+  fix() {
     // Get all elements
-    const elFooter = document.querySelector(Selector.mainFooter);
-    const elSidebar = document.querySelector(Selector.sidebar);
-    const elHeader = document.querySelector(Selector.mainHeader);
-    const elWrapper = document.querySelector(Selector.contentWrapper);
+    const elFooter = document.querySelector(this.Selector.mainFooter);
+    const elSidebar = document.querySelector(this.Selector.sidebar);
+    const elHeader = document.querySelector(this.Selector.mainHeader);
+    const elWrapper = document.querySelector(this.Selector.contentWrapper);
 
     // We need a wrapper, otherwise lets just bail now
     if (!elWrapper) {
@@ -80,7 +93,7 @@ const Layout = (() => {
     }
 
     // Remove overflow from .wrapper if layout-boxed exists
-    const boxedWrapper = document.querySelector(`${Selector.layoutBoxed} > ${Selector.wrapper}`);
+    const boxedWrapper = document.querySelector(`${this.Selector.layoutBoxed} > ${this.Selector.wrapper}`);
     if (boxedWrapper) {
       boxedWrapper.style.overflow = 'hidden';
     }
@@ -95,7 +108,7 @@ const Layout = (() => {
 
     // Set the min-height of the content and sidebar based on
     // the height of the document.
-    if (document.querySelector('body').classList.contains(ClassName.fixed)) {
+    if (document.querySelector('body').classList.contains(this.ClassName.fixed)) {
       elWrapper.style.minHeight = `${windowHeight - footerHeight}px`;
     } else {
       // Set height of page
@@ -108,26 +121,26 @@ const Layout = (() => {
       }
 
       // Fix for the control sidebar height
-      const controlSidebar = document.querySelector(Selector.controlSidebar);
+      const controlSidebar = document.querySelector(this.Selector.controlSidebar);
       if (controlSidebar) {
         if (controlSidebar.clientHeight > postSetHeight) {
           elWrapper.style.minHeight = `${controlSidebar.clientHeight}px`;
         }
       }
     }
-  };
+  }
 
   /**
    * Fix Sidebar for scrolling on fixed layout
    */
-  const fixSidebar = () => {
-    const elHeader = document.querySelector(Selector.mainHeader);
-    const elSidebar = document.querySelector(Selector.sidebar);
+  fixSidebar() {
+    const elHeader = document.querySelector(this.Selector.mainHeader);
+    const elSidebar = document.querySelector(this.Selector.sidebar);
 
     if (!elSidebar) return;
 
     // Make sure the body tag has the .fixed class otherwise return
-    if (!element.classList.contains(ClassName.fixed)) {
+    if (!this.element.classList.contains(this.ClassName.fixed)) {
       return;
     }
 
@@ -137,80 +150,50 @@ const Layout = (() => {
 
     elSidebar.style.height = `${windowHeight - headerHeight}px`;
     elSidebar.style.overflowY = 'scroll';
-  };
+  }
 
   /**
    * Proxy for calling both fix methods
    */
-  const fixLayout = () => {
-    fix();
-    fixSidebar();
-  };
+  fixLayout() {
+    this.fix();
+    this.fixSidebar();
+  }
+}
 
-  /**
-   * Actives layout methods
-   */
-  const activate = () => {
-    fixLayout();
+/**
+ * Default Options
+ * @type {Object}
+ */
+Layout.Default = {
+  resetHeight: true,
+  transitionEnabled: true,
+};
 
-    if (options.transitionEnabled) {
-      element.classList.remove(ClassName.holdTransition);
-    }
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+Layout.Selector = {
+  heightReset: 'body, html, .wrapper',
+  wrapper: '.wrapper',
+  sidebar: '.sidebar',
+  logo: '.main-header .logo',
+  layoutBoxed: '.layout-boxed',
+  sidebarMenu: '.sidebar-menu',
+  mainFooter: '.main-footer',
+  mainHeader: '.main-header',
+  contentWrapper: '.content-wrapper',
+  controlSidebar: '.control-sidebar',
+};
 
-    // Reset main wrapper elements
-    if (options.resetHeight) {
-      const elements = document.querySelectorAll(Selector.heightReset);
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+Layout.ClassName = {
+  holdTransition: 'hold-transition',
+  fixed: 'fixed',
+};
 
-      Array.prototype.forEach.call(elements, (el) => {
-        const elC = el;
-        elC.style.height = 'auto';
-        elC.style.minHeight = '100%';
-      });
-    }
-
-    // Resize when window is resized
-    if (!bindedResize) {
-      window.addEventListener('resize', fixLayout);
-
-      const elLogo = document.querySelector(Selector.logo);
-      const elSidebar = document.querySelector(ClassName.sidebar);
-
-      if (elLogo) elLogo.addEventListener('transitionend', fixLayout);
-      if (elSidebar) elSidebar.addEventListener('transitionend', fixLayout);
-
-      bindedResize = true;
-    }
-
-    // If sidebar menu has expanded options, ensure layout is recalculated
-    document.querySelector(Selector.sidebarMenu).addEventListener('tree_expanded', fixLayout);
-    document.querySelector(Selector.sidebarMenu).addEventListener('tree_collapsed', fixLayout);
-  };
-
-  /**
-   * Constructor
-   */
-  const Constructor = () => {
-    // get body element from DOM
-    element = document.querySelector('body');
-
-    // Set options here
-    options = Utilities.grabOptions(Default, null, element);
-
-    activate();
-  };
-
-  return {
-    /**
-     * Constructor. Binds listeners onto sidebar elements
-     */
-    bind: () => Constructor(),
-
-    /**
-     * Public method proxies
-     */
-    fixSidebar: () => fixSidebar(),
-    active: () => activate(),
-  };
-})();
-
-runner.push(Layout.bind);
+runner.push(() => new Layout());
