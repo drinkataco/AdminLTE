@@ -12,7 +12,7 @@ window.onload = () => runner.map(run => run());
  * Utilities
  * @type {Object}
  */
-const Utilities = () => {};
+const Utilities = {};
 
 /**
  * Finds children of element
@@ -110,8 +110,8 @@ class Tree {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param  {Object} el   The main sidebar element
-   * @param  {Object} opts list of options
+   * @param {Object} el   The main sidebar element
+   * @param {Object} opts list of options
    */
   constructor(element, options) {
     // Add parameters to global scope
@@ -183,8 +183,8 @@ class Tree {
 
   /**
    * Collapse element
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
+   * @param {Object} tree     The child tree/menu
+   * @param {Object} parentLi The parent element that contains the tree
    */
   collapse(tree, parentLi) {
     parentLi.classList.remove(this.ClassName.open);
@@ -205,8 +205,8 @@ class Tree {
 
   /**
    * Expand menu selection, and close all siblings
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
+   * @param {Object} tree     The child tree/menu
+   * @param {Object} parentLi The parent element that contains the tree
    */
   expand(tree, parentLi) {
     // We need to access direct siblings to support multilevel menus remaining open
@@ -312,6 +312,7 @@ class PushMenu {
     this.Default = PushMenu.Default;
     this.ClassName = PushMenu.ClassName;
     this.Selector = PushMenu.Selector;
+
     this.element = element;
 
     // And  Window Width
@@ -322,6 +323,10 @@ class PushMenu {
 
     // Get main page body element
     this.body = document.querySelector('body');
+
+    if (!element) {
+      return;
+    }
 
     // Add Listeners to expand/collapse sidebar on hover
     if (this.options.expandOnHover ||
@@ -697,186 +702,159 @@ Layout.ClassName = {
 runner.push(() => new Layout());
 
 
+/* global runner */
+/* global Utilities */
+
 /* ControlSidebar()
  * ===============
  * Toggles the state of the control sidebar
  *
- * @Usage: ControlSider.init(button_element, options);
- *         or add [data-toggle="control-sidebar"] to the trigger
+ * @Usage: new ControlSider(button, options);
+ *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
  *         Pass any option as data-option="value"
  */
-/* global runner */
-/* global Utilities */
-const ControlSidebar = (() => {
+class ControlSidebar {
   /**
-   * Default Options
-   * @type {Object}
+   * Binds listeners onto sidebar elements
    */
-  const Default = {
-    slide: true,
-  };
+  static bind() {
+    const buttons = document.querySelectorAll(ControlSidebar.Selector.data);
+
+    if (!buttons) return;
+
+    Array.prototype.forEach.call(
+      buttons,
+      button => new ControlSidebar(button),
+    );
+  }
 
   /**
-   * Selectors for query selections
-   * @type {Object}
+   * Opens existing active element(s) and calls method to bind
+   * click event listeners onto the sidebar itself
+   * @param {Object} el   The main sidebar element
+   * @param  {Object} opts list of options
    */
-  const Selector = {
-    data: '[data-toggle="control-sidebar"]',
-    bg: '.control-sidebar-bg',
-    wrapper: '.wrapper',
-    sidebar: '.control-sidebar',
-  };
+  constructor(button, options) {
+    // Add parameters to global scope
+    this.Default = ControlSidebar.Default;
+    this.ClassName = ControlSidebar.ClassName;
+    this.Selector = ControlSidebar.Selector;
+    this.Event = ControlSidebar.Event;
 
-  /**
-   * DOM Class Names
-   * @type {Object}
-   */
-  const ClassName = {
-    open: 'control-sidebar-open',
-    boxed: 'layout-boxed',
-  };
+    this.element = document.querySelector(this.Selector.sidebar);
 
-  /**
-   * Custom Events
-   * @type {Object}
-   */
-  const Event = {
-    expanded: 'controlsidebar_expanded',
-    collapsed: 'controlsidebar_collapsed',
-  };
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
-  /**
-   * User defined options
-   */
-  let options = {};
+    // Get main page body element
+    this.body = document.querySelector('body');
 
-  /**
-   * Main controller element for menu
-   */
-  let element;
+    // Toggle open/close
+    button.addEventListener(
+      'click',
+      (e) => {
+        e.preventDefault();
+        this.toggle();
+        this.fix();
+      },
+    );
 
-  /**
-   * Body
-   */
-  let body;
+    window.addEventListener('resize', this.fix);
+  }
 
   /**
    * Fix sidebar height
    */
-  const fix = () => {
-    if (body.classList.contains(ClassName.boxed)) {
-      const sbg = document.querySelector(Selector.bg);
-      const wrapper = document.querySelector(Selector.wrapper);
+  fix() {
+    if (this.body.classList.contains(this.ClassName.boxed)) {
+      const sbg = document.querySelector(this.Selector.bg);
+      const wrapper = document.querySelector(this.Selector.wrapper);
 
       if (sbg && wrapper) {
         sbg.style.position = 'absolute';
         sbg.style.height = wrapper.innerHeight;
       }
     }
-  };
-
-  /**
-   * Open Sidebar
-   */
-  const expand = () => {
-    if (!options.slide) {
-      body.classList.add(ClassName.open);
-    } else {
-      element.classList.add(ClassName.open);
-    }
-
-    element.dispatchEvent(new CustomEvent(Event.expanded));
-  };
-
-  /**
-   * Close Sidebr
-   */
-  const collapse = () => {
-    body.classList.remove(ClassName.open);
-    element.classList.remove(ClassName.open);
-
-    element.dispatchEvent(new CustomEvent(Event.collapsed));
-  };
+  }
 
   /**
    * Toggle sidebar open/close
    */
-  const toggle = () => {
-    const sidebar = document.querySelector(Selector.sidebar);
+  toggle() {
+    const sidebar = document.querySelector(this.Selector.sidebar);
 
     if (!sidebar) return;
 
-    fix();
+    this.fix();
 
-    if (!sidebar.classList.contains(ClassName.open) &&
-        !body.classList.contains(ClassName.open)) {
-      expand();
+    if (!sidebar.classList.contains(this.ClassName.open) &&
+        !this.body.classList.contains(this.ClassName.open)) {
+      this.expand();
     } else {
-      collapse();
+      this.collapse();
     }
-  };
+  }
 
   /**
-   * Contrust object
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
+   * Open Sidebar
    */
-  const Constructor = (el, opts) => {
-    // Set options here
-    options = Utilities.grabOptions(Default, opts, el);
+  expand() {
+    if (!this.options.slide) {
+      this.body.classList.add(this.ClassName.open);
+    } else {
+      this.element.classList.add(this.ClassName.open);
+    }
 
-    // Add parameters to global scope
-    // @todo data-bind-to
-    element = document.querySelector(Selector.sidebar);
+    this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+  }
 
-    // Get main page body element
-    const { 0: b } = document.getElementsByTagName('body');
-    body = b;
+  /**
+   * Close Sidebr
+   */
+  collapse() {
+    this.body.classList.remove(this.ClassName.open);
+    this.element.classList.remove(this.ClassName.open);
 
-    // Toggle open/close
-    toggle();
+    this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+  }
+}
 
-    fix();
+/**
+ * Default Options
+ * @type {Object}
+ */
+ControlSidebar.Default = {
+  slide: true,
+};
 
-    window.addEventListener('resize', fix);
-  };
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+ControlSidebar.Selector = {
+  data: '[data-toggle="control-sidebar"]',
+  bg: '.control-sidebar-bg',
+  wrapper: '.wrapper',
+  sidebar: '.control-sidebar',
+};
 
-  return {
-    /**
-     * Constructor. Binds listeners onto sidebar elements
-     */
-    bind: () => {
-      const buttons = document.querySelectorAll(Selector.data);
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+ControlSidebar.ClassName = {
+  open: 'control-sidebar-open',
+  boxed: 'layout-boxed',
+};
 
-      if (!buttons) return;
-
-      Array.prototype.forEach.call(
-        buttons,
-        button => ControlSidebar.init(button),
-      );
-    },
-
-    /**
-     * Manually Assign
-     * @param  {Object} sidebar Element to bind to
-     * @param  {Object} options Options to override ()
-     */
-    init: (button, opts) => {
-      button.addEventListener(
-        'click',
-        (e) => {
-          e.preventDefault();
-          Constructor(button, opts);
-        },
-      );
-    },
-
-    /**
-     * Public method proxies
-     */
-    fix: () => fix(),
-  };
-})();
+/**
+ * Custom Events
+ * @type {Object}
+ */
+ControlSidebar.Event = {
+  expanded: 'controlsidebar_expanded',
+  collapsed: 'controlsidebar_collapsed',
+};
 
 runner.push(ControlSidebar.bind);
 

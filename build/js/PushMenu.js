@@ -30,6 +30,7 @@ class PushMenu {
     this.Default = PushMenu.Default;
     this.ClassName = PushMenu.ClassName;
     this.Selector = PushMenu.Selector;
+
     this.element = element;
 
     // And  Window Width
@@ -40,6 +41,10 @@ class PushMenu {
 
     // Get main page body element
     this.body = document.querySelector('body');
+
+    if (!element) {
+      return;
+    }
 
     // Add Listeners to expand/collapse sidebar on hover
     if (this.options.expandOnHover ||

@@ -2,7 +2,7 @@
  * Utilities
  * @type {Object}
  */
-const Utilities = () => {};
+const Utilities = {};
 
 /**
  * Finds children of element

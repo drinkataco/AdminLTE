@@ -29,8 +29,8 @@ class Tree {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param  {Object} el   The main sidebar element
-   * @param  {Object} opts list of options
+   * @param {Object} el   The main sidebar element
+   * @param {Object} opts list of options
    */
   constructor(element, options) {
     // Add parameters to global scope
@@ -102,8 +102,8 @@ class Tree {
 
   /**
    * Collapse element
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
+   * @param {Object} tree     The child tree/menu
+   * @param {Object} parentLi The parent element that contains the tree
    */
   collapse(tree, parentLi) {
     parentLi.classList.remove(this.ClassName.open);
@@ -124,8 +124,8 @@ class Tree {
 
   /**
    * Expand menu selection, and close all siblings
-   * @param  {Object} tree     The child tree/menu
-   * @param  {Object} parentLi The parent element that contains the tree
+   * @param {Object} tree     The child tree/menu
+   * @param {Object} parentLi The parent element that contains the tree
    */
   expand(tree, parentLi) {
     // We need to access direct siblings to support multilevel menus remaining open

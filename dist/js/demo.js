@@ -13,6 +13,9 @@ null==d?void 0:d))},attrHooks:{type:{set:function(a,b){if(!o.radioValue&&"radio"
 $(function() {
   'use strict'
 
+  var $pushMenu = new PushMenu();
+  // var $controlSidebar = new ControlSidebar;
+  // var $layout = new Layout();
 
   /**
    * List of all the available skins
@@ -70,10 +73,10 @@ $(function() {
    */
   function changeLayout(cls) {
     $('body').toggleClass(cls)
-    Layout.fixSidebar()
+    $layout.fixSidebar()
     if ($('body').hasClass('fixed') && cls == 'fixed') {
-      PushMenu.expandOnHover()
-      Layout.activate()
+      $pushMenu.expandOnHover()
+      $layout.activate()
     }
     ControlSidebar.fix()
   }
@@ -138,7 +141,7 @@ $(function() {
 
     $('[data-enable="expandOnHover"]').on('click', function () {
       $(this).attr('disabled', true)
-      PushMenu.expandOnHover()
+      $pushMenu.expandOnHover()
       if (!$('body').hasClass('sidebar-collapse'))
         $('[data-layout="sidebar-collapse"]').click()
     })
