@@ -29,15 +29,18 @@ class Tree {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
    */
-  constructor(element, options) {
+  constructor(element, options, classNames, selectors, events) {
     // Add parameters to global scope
     this.Default = Tree.Default;
-    this.ClassName = Tree.ClassName;
-    this.Selector = Tree.Selector;
-    this.Event = Tree.Event;
+    this.ClassName = classNames || Tree.ClassName;
+    this.Selector = selectors || Tree.Selector;
+    this.Event = events || Tree.Event;
     this.element = element;
     this.element.classList.add(this.ClassName.tree);
 

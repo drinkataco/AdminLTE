@@ -22,14 +22,16 @@ class PushMenu {
 
   /**
    * Binds Listeners to DOM
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
    */
-  constructor(element, options) {
+  constructor(element, options, classNames, selectors) {
     // Add parameters to global scope
     this.Default = PushMenu.Default;
-    this.ClassName = PushMenu.ClassName;
-    this.Selector = PushMenu.Selector;
+    this.ClassName = classNames || PushMenu.ClassName;
+    this.Selector = selectors || PushMenu.Selector;
 
     this.element = element;
 

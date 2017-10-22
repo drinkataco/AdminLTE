@@ -14,8 +14,8 @@ $(function() {
   'use strict'
 
   var $pushMenu = new PushMenu();
-  // var $controlSidebar = new ControlSidebar;
-  // var $layout = new Layout();
+  var $controlSidebar = new ControlSidebar();
+  var $layout = new Layout();
 
   /**
    * List of all the available skins
@@ -78,7 +78,7 @@ $(function() {
       $pushMenu.expandOnHover()
       $layout.activate()
     }
-    ControlSidebar.fix()
+    $controlSidebar.fix()
   }
 
   /**
@@ -121,9 +121,9 @@ $(function() {
 
     $('[data-controlsidebar]').on('click', function () {
       changeLayout($(this).data('controlsidebar'))
-      var slide = !ControlSidebar.options.slide
+      var slide = !$controlSidebar.options.slide
 
-      ControlSidebar.options.slide = slide
+      $controlSidebar.options.slide = slide
       if (!slide)
         $('.control-sidebar').removeClass('control-sidebar-open')
     })

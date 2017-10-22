@@ -27,15 +27,18 @@ class ControlSidebar {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param {Object} el   The main sidebar element
-   * @param  {Object} opts list of options
+   * @param {Object} button The main sidebar control trigger
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
    */
-  constructor(button, options) {
+  constructor(button, options, classNames, selectors, events) {
     // Add parameters to global scope
     this.Default = ControlSidebar.Default;
-    this.ClassName = ControlSidebar.ClassName;
-    this.Selector = ControlSidebar.Selector;
-    this.Event = ControlSidebar.Event;
+    this.ClassName = classNames || ControlSidebar.ClassName;
+    this.Selector = selectors || ControlSidebar.Selector;
+    this.Event = events || ControlSidebar.Event;
 
     this.element = document.querySelector(this.Selector.sidebar);
 
@@ -46,6 +49,7 @@ class ControlSidebar {
     this.body = document.querySelector('body');
 
     // Toggle open/close
+    if (!button) return;
     button.addEventListener(
       'click',
       (e) => {

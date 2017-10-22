@@ -6,9 +6,9 @@ const Utilities = {};
 
 /**
  * Finds children of element
- * @param  {String} nodeType   Required node type, such as LI, DIV
- * @param  {String} className  Name of class to grab
- * @param  {Object} parentNode Node of who's children to traverse through
+ * @param {String} nodeType   Required node type, such as LI, DIV
+ * @param {String} className  Name of class to grab
+ * @param {Object} parentNode Node of who's children to traverse through
  * @return {List<Object>}      List of found elements
  */
 Utilities.findChildren = (nodeType, className, parentNode) => {

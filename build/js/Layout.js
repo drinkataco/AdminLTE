@@ -18,18 +18,21 @@
 class Layout {
   /**
    * Constructor
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
    */
-  constructor() {
+  constructor(options, classNames, selectors) {
     // set defaults
     this.Default = Layout.Default;
-    this.Selector = Layout.Selector;
-    this.ClassName = Layout.ClassName;
+    this.Selector = selectors || Layout.Selector;
+    this.ClassName = classNames || Layout.ClassName;
     this.blindedResize = false; // Bind layout methods to resizing
     // get body element from DOM
     this.element = document.querySelector('body');
 
     // Set options here
-    this.options = Utilities.grabOptions(this.Default, null, this.element);
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
     this.activate();
   }

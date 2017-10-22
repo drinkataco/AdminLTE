@@ -16,9 +16,9 @@ const Utilities = {};
 
 /**
  * Finds children of element
- * @param  {String} nodeType   Required node type, such as LI, DIV
- * @param  {String} className  Name of class to grab
- * @param  {Object} parentNode Node of who's children to traverse through
+ * @param {String} nodeType   Required node type, such as LI, DIV
+ * @param {String} className  Name of class to grab
+ * @param {Object} parentNode Node of who's children to traverse through
  * @return {List<Object>}      List of found elements
  */
 Utilities.findChildren = (nodeType, className, parentNode) => {
@@ -110,15 +110,18 @@ class Tree {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
    */
-  constructor(element, options) {
+  constructor(element, options, classNames, selectors, events) {
     // Add parameters to global scope
     this.Default = Tree.Default;
-    this.ClassName = Tree.ClassName;
-    this.Selector = Tree.Selector;
-    this.Event = Tree.Event;
+    this.ClassName = classNames || Tree.ClassName;
+    this.Selector = selectors || Tree.Selector;
+    this.Event = events || Tree.Event;
     this.element = element;
     this.element.classList.add(this.ClassName.tree);
 
@@ -304,14 +307,16 @@ class PushMenu {
 
   /**
    * Binds Listeners to DOM
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
    */
-  constructor(element, options) {
+  constructor(element, options, classNames, selectors) {
     // Add parameters to global scope
     this.Default = PushMenu.Default;
-    this.ClassName = PushMenu.ClassName;
-    this.Selector = PushMenu.Selector;
+    this.ClassName = classNames || PushMenu.ClassName;
+    this.Selector = selectors || PushMenu.Selector;
 
     this.element = element;
 
@@ -521,18 +526,21 @@ runner.push(PushMenu.bind);
 class Layout {
   /**
    * Constructor
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
    */
-  constructor() {
+  constructor(options, classNames, selectors) {
     // set defaults
     this.Default = Layout.Default;
-    this.Selector = Layout.Selector;
-    this.ClassName = Layout.ClassName;
+    this.Selector = selectors || Layout.Selector;
+    this.ClassName = classNames || Layout.ClassName;
     this.blindedResize = false; // Bind layout methods to resizing
     // get body element from DOM
     this.element = document.querySelector('body');
 
     // Set options here
-    this.options = Utilities.grabOptions(this.Default, null, this.element);
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
     this.activate();
   }
@@ -731,15 +739,18 @@ class ControlSidebar {
   /**
    * Opens existing active element(s) and calls method to bind
    * click event listeners onto the sidebar itself
-   * @param {Object} el   The main sidebar element
-   * @param  {Object} opts list of options
+   * @param {Object} button The main sidebar control trigger
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
    */
-  constructor(button, options) {
+  constructor(button, options, classNames, selectors, events) {
     // Add parameters to global scope
     this.Default = ControlSidebar.Default;
-    this.ClassName = ControlSidebar.ClassName;
-    this.Selector = ControlSidebar.Selector;
-    this.Event = ControlSidebar.Event;
+    this.ClassName = classNames || ControlSidebar.ClassName;
+    this.Selector = selectors || ControlSidebar.Selector;
+    this.Event = events || ControlSidebar.Event;
 
     this.element = document.querySelector(this.Selector.sidebar);
 
@@ -750,6 +761,7 @@ class ControlSidebar {
     this.body = document.querySelector('body');
 
     // Toggle open/close
+    if (!button) return;
     button.addEventListener(
       'click',
       (e) => {
