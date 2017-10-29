@@ -5,7 +5,7 @@
  * =========
  * Adds AJAX content control to a box.
  *
- * @Usage: $('#my-box').boxRefresh(options)
+ * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element
  *         Pass any option as data-option="value"
  */
