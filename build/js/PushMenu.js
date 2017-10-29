@@ -61,7 +61,7 @@ class PushMenu {
       .addEventListener(
         'click',
         () => {
-          if (this.windowWidth <= options.collapseScreenSize &&
+          if (this.windowWidth <= this.options.collapseScreenSize &&
             this.body.classList.contains(this.ClassName.open)) {
             this.close();
           }

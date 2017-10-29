@@ -59,7 +59,7 @@ class ControlSidebar {
       },
     );
 
-    window.addEventListener('resize', this.fix);
+    window.addEventListener('resize', this.fix.bind(this));
   }
 
   /**
