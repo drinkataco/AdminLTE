@@ -878,7 +878,7 @@ runner.push(ControlSidebar.bind);
  * =========
  * Adds AJAX content control to a box.
  *
- * @Usage: $('#my-box').boxRefresh(options)
+ * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element
  *         Pass any option as data-option="value"
  */
@@ -897,7 +897,6 @@ class BoxRefresh {
    * Binds Listeners to DOM
    * @param {Object} element The main sidebar element
    * @param {Object|null} options list of options
-   * @param {Object|null} classNames list of classnames
    * @param {Object|null} selectors list of dom selectors
    */
   constructor(element, options, selectors) {
@@ -936,7 +935,9 @@ class BoxRefresh {
    * Load Content
    */
   load() {
-    this.addOverlay();
+    if (this.options.showOverlay) {
+      this.addOverlay();
+    }
 
     const stringToObj = (s) => {
       const obj = (typeof s === 'string') ? JSON.parse(s) : s;
@@ -978,7 +979,12 @@ class BoxRefresh {
     // Declare method for resolving of request
     const httpResolve = (response) => {
       this.options.onLoadDone.call(this, response);
-      this.removeOverlay();
+
+      // remove loading overlay if it was shown
+      if (this.options.showOverlay) {
+        this.removeOverlay();
+      }
+
       if (this.options.loadInContent) {
         this.element.querySelector(this.options.content).innerHTML = response;
       }
@@ -1031,6 +1037,7 @@ BoxRefresh.Default = {
   content: '.box-body',
   loadInContent: true,
   responseType: '',
+  showOverlay: true,
   overlayTemplate: '<div class="overlay"><div class="fa fa-refresh fa-spin"></div></div>',
   onLoadStart: (reject, resolve) => { resolve(); },
   onLoadDone: response => response,
@@ -1049,100 +1056,228 @@ runner.push(BoxRefresh.bind);
 
 
 /* global runner */
+/* global Velocity */
 /* global Utilities */
-const BoxWidget = (() => {
-  /**
-   * Default Options
-   * @type {Object}
-   */
-  const Default = {
-    animationSpeed: 500,
-    collapseTrigger: '[data-widget="collapse"]',
-    removeTrigger: '[data-widget="remove"]',
-    collapseIcon: 'fa-minus',
-    expandIcon: 'fa-plus',
-    removeIcon: 'fa-times',
-  };
 
+/* BoxWidget()
+ * =========
+ * Adds AJAX content control to a box.
+ *
+ * @Usage: new BoxWidget(element, options);
+ *         or add [data-widget="box-refresh"] to the box element
+ *         Pass any option as data-option="value"
+ */
+class BoxWidget {
   /**
-   * Selectors for query selections
-   * @type {Object}
+   * Binds listeners onto sidebar elements
    */
-  const Selector = {
-    collapsed: '.collapsed-box',
-    body: '.box-body',
-    footer: '.box-footer',
-    tools: '.box-tools',
-  };
-
-  /**
-   * DOM Class Names
-   * @type {Object}
-   */
-  const ClassName = {
-    collapsed: 'collapsed-box',
-  };
-
-  /**
-   * [Event description]
-   * @type {Object}
-   */
-  const Event = {
-    collapsed: 'collapsed.boxwidget',
-    expanded: 'expanded.boxwidget',
-    removed: 'removed.boxwidget',
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(BoxWidget.Selector.data),
+      element => new BoxWidget(element),
+    );
   }
 
   /**
-   * Contextual Options
+   * Add event listeners to box buttons if exists
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
    */
-  let options;
-
-  /**
-   * Contextual Element
-   */
-  let element;
-
-  /**
-   * Binds Listeners to DOM
-   * @param {Object} el   The main sidebar element
-   * @param {Object} opts list of options
-   */
-  const Constructor = (el, opts) => {
-    // Set options here
-    options = Utilities.grabOptions(Default, opts, el);
-
+  constructor(element, options, classNames, selectors, events) {
     // Add parameters to global scope
-    element = el;
+    this.Default = BoxWidget.Default;
+    this.ClassName = classNames || BoxWidget.ClassName;
+    this.Selector = selectors || BoxWidget.Selector;
+    this.Event = events || BoxWidget.Event;
+    this.element = element;
 
-    const collapsers = element.querySelector(options.collapseTrigger);
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
+
+    // bind listeners
+    this.setUpListeners();
+  }
+
+  /**
+   * Set up box widget button listeners
+   */
+  setUpListeners() {
+    // Bind Collapse Events
     Array.prototype.forEach.call(
-      collapsers,
-      (e) => {
-        e.preventDefault();
+      this.element.querySelectorAll(this.options.collapseTrigger),
+      (el) => {
+        el.addEventListener(
+          'click',
+          (e) => {
+            e.preventDefault();
+            this.toggle();
+          },
+        );
+      },
+    );
 
-      }
-    ).bind(this);
+    // Bind Remove Events
+    Array.prototype.forEach.call(
+      this.element.querySelectorAll(this.options.removeTrigger),
+      (el) => {
+        el.addEventListener(
+          'click',
+          (e) => {
+            e.preventDefault();
+            this.remove();
+          },
+        );
+      },
+    );
+  }
 
-  };
+  /**
+   * Toggle the collapse state of the box
+   */
+  toggle() {
+    const isOpen = !this.element.classList.contains(this.ClassName.collapsed);
 
-  return {
-    /**
-     * Constructor. Binds listeners onto elements
-     */
-    bind: () => {
+    if (isOpen) {
+      this.collapse();
+    } else {
+      this.expand();
+    }
+  }
 
-    },
-    /**
-     * Manually Assign
-     * @param {Object} el Element to bind to
-     * @param {Object} opts Options to override ()
-     */
-    init: (el, opts) => {},
-  };
-})();
+  /**
+   * Remove box
+   */
+  remove() {
+    // Slide whole element up before removing
+    Velocity(this.element, 'slideUp', {
+      easing: this.options.easing,
+      duration: this.options.animationSpeed,
+    }).then(() => {
+      this.element.dispatchEvent(new CustomEvent(this.Event.removed));
+      this.element.remove();
+    });
+  }
+
+  /**
+   * Collapse box by sliding up elements
+   */
+  collapse() {
+    // Change collapse icon(s) to show expanded icon
+    const collapseIcons = this.element.querySelectorAll(`.${this.options.collapseIcon}`);
+
+    Array.prototype.forEach.call(collapseIcons, (i) => {
+      i.classList.remove(this.options.collapseIcon);
+      i.classList.add(this.options.expandIcon);
+    });
+
+    // Slide elements up
+    const slideUp = (element, fireEvent) => {
+      Velocity(element, 'slideUp', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        if (fireEvent) {
+          this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+        }
+      });
+    };
+
+    // Slide both body and footer
+    slideUp(this.element.querySelector(this.Selector.footer));
+    slideUp(this.element.querySelector(this.Selector.body), true);
+
+    // Add collapsed class after animation finished
+    setTimeout(
+      () => this.element.classList.add(this.ClassName.collapsed),
+      this.options.animationSpeed,
+    );
+  }
+
+  /**
+   * Expand box by sliding down elements
+   */
+  expand() {
+    // Change collapse icon(s) to show expanded icon
+    const collapseIcons = this.element.querySelectorAll(`.${this.options.expandIcon}`);
+
+    Array.prototype.forEach.call(collapseIcons, (i) => {
+      i.classList.remove(this.options.expandIcon);
+      i.classList.add(this.options.collapseIcon);
+    });
+
+    // Slide elements up
+    const slideDown = (element, fireEvent) => {
+      Velocity(element, 'slideDown', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        if (fireEvent) {
+          this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+        }
+      });
+    };
+
+    // Slide both body and footer
+    slideDown(this.element.querySelector(this.Selector.footer));
+    slideDown(this.element.querySelector(this.Selector.body), true);
+
+    // Add collapsed class after animation finished
+    setTimeout(
+      () => this.element.classList.remove(this.ClassName.collapsed),
+      this.options.animationSpeed,
+    );
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+BoxWidget.Default = {
+  animationSpeed: 500,
+  easing: 'easeInSine',
+  collapseTrigger: '[data-widget="collapse"]',
+  removeTrigger: '[data-widget="remove"]',
+  collapseIcon: 'fa-minus',
+  expandIcon: 'fa-plus',
+  removeIcon: 'fa-times',
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+BoxWidget.Selector = {
+  data: '.box',
+  // collapsed: '.collapsed-box',
+  body: '.box-body',
+  footer: '.box-footer',
+  // tools: '.box-tools',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+BoxWidget.ClassName = {
+  collapsed: 'collapsed-box',
+};
+
+/**
+ * Custom Events
+ * @type {Object}
+ */
+BoxWidget.Event = {
+  collapsed: 'boxwidget_collapsed',
+  expanded: 'boxwidget_expanded',
+  removed: 'boxwidget_remove',
+};
 
 runner.push(BoxWidget.bind);
+
 
 /* global runner */
 /* global Utilities */
