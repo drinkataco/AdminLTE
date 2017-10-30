@@ -24,7 +24,6 @@ class BoxRefresh {
    * Binds Listeners to DOM
    * @param {Object} element The main sidebar element
    * @param {Object|null} options list of options
-   * @param {Object|null} classNames list of classnames
    * @param {Object|null} selectors list of dom selectors
    */
   constructor(element, options, selectors) {
@@ -63,7 +62,9 @@ class BoxRefresh {
    * Load Content
    */
   load() {
-    this.addOverlay();
+    if (this.options.showOverlay) {
+      this.addOverlay();
+    }
 
     const stringToObj = (s) => {
       const obj = (typeof s === 'string') ? JSON.parse(s) : s;
@@ -105,7 +106,12 @@ class BoxRefresh {
     // Declare method for resolving of request
     const httpResolve = (response) => {
       this.options.onLoadDone.call(this, response);
-      this.removeOverlay();
+
+      // remove loading overlay if it was shown
+      if (this.options.showOverlay) {
+        this.removeOverlay();
+      }
+
       if (this.options.loadInContent) {
         this.element.querySelector(this.options.content).innerHTML = response;
       }
@@ -158,6 +164,7 @@ BoxRefresh.Default = {
   content: '.box-body',
   loadInContent: true,
   responseType: '',
+  showOverlay: true,
   overlayTemplate: '<div class="overlay"><div class="fa fa-refresh fa-spin"></div></div>',
   onLoadStart: (reject, resolve) => { resolve(); },
   onLoadDone: response => response,
