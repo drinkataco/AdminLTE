@@ -62,6 +62,7 @@ class BoxRefresh {
    * Load Content
    */
   load() {
+    // Add loading overlay
     if (this.options.showOverlay) {
       this.addOverlay();
     }
@@ -106,7 +107,11 @@ class BoxRefresh {
 
     // Declare method for resolving of request
     const httpResolve = (response) => {
-      this.options.onLoadDone.call(this, response);
+      if (typeof this.options.onLoadDone === 'string') {
+        window[this.options.onLoadDone](this, response);
+      } else {
+        this.options.onLoadDone.call(this, response);
+      }
 
       // remove loading overlay if it was shown
       if (this.options.showOverlay) {
@@ -122,7 +127,11 @@ class BoxRefresh {
      * Start with custom pre-callout method
      */
     const request = new Promise((resolve, reject) => {
-      this.options.onLoadStart.call(this, reject, resolve);
+      if (typeof this.options.onLoadStart === 'string') {
+        window[this.options.onLoadStart](this, reject, resolve);
+      } else {
+        this.options.onLoadStart.call(this, reject, resolve);
+      }
     });
 
     /**
@@ -167,8 +176,8 @@ BoxRefresh.Default = {
   responseType: '',
   showOverlay: true,
   overlayTemplate: '<div class="overlay"><div class="fa fa-refresh fa-spin"></div></div>',
-  onLoadStart: (reject, resolve) => { resolve(); },
-  onLoadDone: response => response,
+  onLoadStart: (reject, resolve) => { resolve(); }, // pass as method name in data-attr
+  onLoadDone: response => response, // pass as method name in data-attr
 };
 
 /**

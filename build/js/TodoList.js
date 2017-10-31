@@ -80,7 +80,7 @@ class TodoList {
     if (typeof this.options.onCheck === 'string') {
       window[this.options.onCheck](checkbox);
     } else {
-      this.options.oncheck.call(checkbox);
+      this.options.onCheck.call(checkbox);
     }
   }
 
