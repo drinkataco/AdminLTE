@@ -54,7 +54,7 @@ Utilities.grabOptions = (def, current, element, fields) => {
     // Otherwise attempt to find it in the dataset
     } else if (element && fieldName in element.dataset) {
       value = element.dataset[fieldName];
-      // Otherwise, let's just go with the default value
+    // Otherwise, let's just go with the default value
     } else {
       value = options.default[fieldName];
     }

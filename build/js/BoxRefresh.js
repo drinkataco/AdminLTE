@@ -66,6 +66,7 @@ class BoxRefresh {
       this.addOverlay();
     }
 
+    // Try to convert string to object – for headers/param definition
     const stringToObj = (s) => {
       const obj = (typeof s === 'string') ? JSON.parse(s) : s;
       return obj;
