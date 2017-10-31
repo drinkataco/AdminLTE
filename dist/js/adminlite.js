@@ -10,6 +10,9 @@ window.onload = () => runner.map(run => run());
 
 /**
  * Utilities
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
  * @type {Object}
  */
 const Utilities = {};
@@ -289,6 +292,10 @@ runner.push(Tree.bind);
 /* PushMenu()
  * ==========
  * Adds the push menu functionality to the sidebar.
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
  *
  * @Usage: new PushMenu(element, options)
  *         Add [data-widget="push-menu"] to the ul element
@@ -717,6 +724,10 @@ runner.push(() => new Layout());
  * ===============
  * Toggles the state of the control sidebar
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new ControlSider(button, options);
  *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
  *         Pass any option as data-option="value"
@@ -877,6 +888,10 @@ runner.push(ControlSidebar.bind);
 /* BoxRefresh()
  * =========
  * Adds AJAX content control to a box.
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
  *
  * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element
@@ -1072,6 +1087,10 @@ runner.push(BoxRefresh.bind);
 /* BoxWidget()
  * =========
  * Adds AJAX content control to a box.
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
  *
  * @Usage: new BoxWidget(element, options);
  *         or add [data-widget="box-refresh"] to the box element
@@ -1344,6 +1363,10 @@ runner.push(DirectChat.bind);
  * =========
  * Converts a list into a todoList.
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new TodoList(element, options)
  *         or add [data-widget="todo-list"] to the ul element
  *         Pass any option as data-option="value"
@@ -1361,7 +1384,7 @@ class TodoList {
 
   /**
    * Binds Listeners to DOM
-   * @param {Object} element The main sidebar element
+   * @param {Object} element The main checkbox list element
    * @param {Object|null} options list of options
    * @param {Object|null} classNames list of classnames
    * @param {Object|null} selectors list of dom selectors

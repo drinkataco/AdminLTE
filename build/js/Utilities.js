@@ -1,5 +1,8 @@
 /**
  * Utilities
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
  * @type {Object}
  */
 const Utilities = {};

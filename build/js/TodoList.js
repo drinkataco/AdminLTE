@@ -5,6 +5,10 @@
  * =========
  * Converts a list into a todoList.
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new TodoList(element, options)
  *         or add [data-widget="todo-list"] to the ul element
  *         Pass any option as data-option="value"
@@ -22,7 +26,7 @@ class TodoList {
 
   /**
    * Binds Listeners to DOM
-   * @param {Object} element The main sidebar element
+   * @param {Object} element The main checkbox list element
    * @param {Object|null} options list of options
    * @param {Object|null} classNames list of classnames
    * @param {Object|null} selectors list of dom selectors

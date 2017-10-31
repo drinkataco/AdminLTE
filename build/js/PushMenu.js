@@ -5,6 +5,10 @@
  * ==========
  * Adds the push menu functionality to the sidebar.
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new PushMenu(element, options)
  *         Add [data-widget="push-menu"] to the ul element
  *         Pass any option as data-option-name="value"
