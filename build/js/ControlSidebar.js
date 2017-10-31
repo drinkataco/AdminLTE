@@ -5,6 +5,10 @@
  * ===============
  * Toggles the state of the control sidebar
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new ControlSider(button, options);
  *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
  *         Pass any option as data-option="value"

@@ -6,6 +6,10 @@
  * =========
  * Adds AJAX content control to a box.
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
  * @Usage: new BoxWidget(element, options);
  *         or add [data-widget="box-refresh"] to the box element
  *         Pass any option as data-option="value"
