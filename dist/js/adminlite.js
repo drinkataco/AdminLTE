@@ -1204,14 +1204,16 @@ class BoxWidget {
 
     // Slide elements up
     const slideUp = (element, fireEvent) => {
-      Velocity(element, 'slideUp', {
-        easing: this.options.easing,
-        duration: this.options.animationSpeed,
-      }).then(() => {
-        if (fireEvent) {
-          this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
-        }
-      });
+      if (element) {
+        Velocity(element, 'slideUp', {
+          easing: this.options.easing,
+          duration: this.options.animationSpeed,
+        }).then(() => {
+          if (fireEvent) {
+            this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+          }
+        });
+      }
     };
 
     // Slide both body and footer
@@ -1239,14 +1241,16 @@ class BoxWidget {
 
     // Slide elements up
     const slideDown = (element, fireEvent) => {
-      Velocity(element, 'slideDown', {
-        easing: this.options.easing,
-        duration: this.options.animationSpeed,
-      }).then(() => {
-        if (fireEvent) {
-          this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
-        }
-      });
+      if (element) {
+        Velocity(element, 'slideDown', {
+          easing: this.options.easing,
+          duration: this.options.animationSpeed,
+        }).then(() => {
+          if (fireEvent) {
+            this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+          }
+        });
+      }
     };
 
     // Slide both body and footer
