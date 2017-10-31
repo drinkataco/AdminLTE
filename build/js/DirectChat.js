@@ -1,46 +1,83 @@
 /* global runner */
-/* global Utilities */
-const DirectChat = (() => {
+
+/* DirectChat()
+ * ===============
+ * Toggles the state of the control sidebar
+ *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ *
+ * @Usage: new DirectChat(element, options)
+ *         or add [data-widget="direct-chat"] to the trigger
+ */
+class DirectChat {
   /**
-   * Default Options
-   * @type {Object}
+   * Binds listeners onto sidebar elements
    */
-  const Default = {};
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(DirectChat.Selector.data),
+      element => new DirectChat(element),
+    );
+  }
 
   /**
-   * Selectors for query selections
-   * @type {Object}
+   * Get options, call to set listeners
+   * @param {Object} element The main trigger element
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
    */
-  const Selector = {}
+  constructor(element, classNames, selectors) {
+    // Add parameters to global scope
+    this.ClassName = classNames || DirectChat.ClassName;
+    this.Selector = selectors || DirectChat.Selector;
+
+    this.element = element;
+
+    this.setUpListener();
+  }
 
   /**
-   * DOM Class Names
-   * @type {Object}
+   * Set up event listeners
    */
-  const ClassName = {}
+  setUpListener() {
+    this.element.addEventListener(
+      'click',
+      (e) => {
+        this.toggle();
+        e.preventDefault();
+      },
+    );
+  }
 
   /**
-   * Contextual Options
+   * Toggle overlay
    */
-  let options;
+  toggle() {
+    const mainBox = this.element.closest(this.Selector.box);
 
-  /**
-   * Contextual Element
-   */
-  let element;
+    if (mainBox) {
+      mainBox.classList.toggle(this.ClassName.open);
+    }
+  }
+}
 
-  return {
-    /**
-     * Constructor. Binds listeners onto elements
-     */
-    bind: () => {},
-    /**
-     * Manually Assign
-     * @param {Object} el Element to bind to
-     * @param {Object} opts Options to override ()
-     */
-    init: (el, opts) => {},
-  };
-})();
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+DirectChat.Selector = {
+  data: '[data-widget="chat-pane-toggle"]',
+  box: '.direct-chat',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+DirectChat.ClassName = {
+  open: 'direct-chat-contacts-open',
+};
 
 runner.push(DirectChat.bind);
