@@ -7,7 +7,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE BoxRefresh.js jQuery Plugin
  *
  * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element

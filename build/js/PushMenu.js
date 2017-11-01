@@ -7,7 +7,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE PushMenu.js jQuery Plugin
  *
  * @Usage: new PushMenu(element, options)
  *         Add [data-widget="push-menu"] to the ul element

@@ -9,7 +9,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE Tree.js jQuery Plugin
  *
  * @Usage: new Tree(element, options)
  *         Add [data-widget="tree"] to the ul element

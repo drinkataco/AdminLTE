@@ -6,7 +6,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE DirectChat.js jQuery Plugin
  *
  * @Usage: new DirectChat(element, options)
  *         or add [data-widget="direct-chat"] to the trigger

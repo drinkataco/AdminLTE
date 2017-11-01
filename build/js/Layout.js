@@ -9,7 +9,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE Layout.js jQuery Plugin
  *
  * @usage activated automatically upon window load.
  *        Configure any options by passing data-option="value"

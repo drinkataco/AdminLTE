@@ -7,7 +7,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE TodoList.js jQuery Plugin
  *
  * @Usage: new TodoList(element, options)
  *         or add [data-widget="todo-list"] to the ul element

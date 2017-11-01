@@ -7,7 +7,7 @@
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE ControlSidebar.js jQuery Plugin
  *
  * @Usage: new ControlSider(button, options);
  *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
