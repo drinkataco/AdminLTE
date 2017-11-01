@@ -98,14 +98,19 @@ class BoxWidget {
    * Remove box
    */
   remove() {
-    // Slide whole element up before removing
-    Velocity(this.element, 'slideUp', {
-      easing: this.options.easing,
-      duration: this.options.animationSpeed,
-    }).then(() => {
+    // Slide whole element up to remove if velocity defined, else just hide
+    if (typeof Velocity === 'undefined') {
       this.element.dispatchEvent(new CustomEvent(this.Event.removed));
       this.element.remove();
-    });
+    } else {
+      Velocity(this.element, 'slideUp', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        this.element.dispatchEvent(new CustomEvent(this.Event.removed));
+        this.element.remove();
+      });
+    }
   }
 
   /**
@@ -120,17 +125,29 @@ class BoxWidget {
       i.classList.add(this.options.expandIcon);
     });
 
+    // Determine whether to dispatch collapsed event
+    const dispatchEvent = (fireEvent) => {
+      if (fireEvent) {
+        this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+      }
+    };
+
     // Slide elements up
     const slideUp = (element, fireEvent) => {
-      if (element) {
-        Velocity(element, 'slideUp', {
-          easing: this.options.easing,
-          duration: this.options.animationSpeed,
-        }).then(() => {
-          if (fireEvent) {
-            this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
-          }
-        });
+      const boxElement = element;
+      if (boxElement) {
+        // Slide if velocity exists, otherwise just hide
+        if (typeof Velocity === 'undefined') {
+          boxElement.style.display = 'none';
+          dispatchEvent(fireEvent);
+        } else {
+          Velocity(boxElement, 'slideUp', {
+            easing: this.options.easing,
+            duration: this.options.animationSpeed,
+          }).then(() => {
+            dispatchEvent(fireEvent);
+          });
+        }
       }
     };
 
@@ -157,17 +174,29 @@ class BoxWidget {
       i.classList.add(this.options.collapseIcon);
     });
 
+    // Determine whether to dispatch expanded event
+    const dispatchEvent = (fireEvent) => {
+      if (fireEvent) {
+        this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+      }
+    };
+
     // Slide elements up
     const slideDown = (element, fireEvent) => {
-      if (element) {
-        Velocity(element, 'slideDown', {
-          easing: this.options.easing,
-          duration: this.options.animationSpeed,
-        }).then(() => {
-          if (fireEvent) {
-            this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
-          }
-        });
+      const boxElement = element;
+      if (boxElement) {
+        // Slide if velocity exists, otherwise just show
+        if (typeof Velocity === 'undefined') {
+          boxElement.style.display = 'block';
+          dispatchEvent(fireEvent);
+        } else {
+          Velocity(element, 'slideDown', {
+            easing: this.options.easing,
+            duration: this.options.animationSpeed,
+          }).then(() => {
+            dispatchEvent(fireEvent);
+          });
+        }
       }
     };
 

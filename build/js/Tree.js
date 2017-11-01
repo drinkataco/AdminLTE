@@ -115,13 +115,18 @@ class Tree {
 
     Array.prototype.forEach.call(treeLocal, (t) => {
       const treeItem = t;
-      Velocity(treeItem, 'slideUp', {
-        easing: this.options.easing,
-        duration: this.options.animationSpeed,
-      }).then(() => {
-        // Call custom event to indicate collapse
+      if (typeof Velocity === 'undefined') {
+        treeItem.style.display = 'none';
         this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
-      });
+      } else {
+        Velocity(treeItem, 'slideUp', {
+          easing: this.options.easing,
+          duration: this.options.animationSpeed,
+        }).then(() => {
+          // Call custom event to indicate collapse
+          this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+        });
+      }
     });
   }
 
@@ -148,13 +153,18 @@ class Tree {
     parentLi.classList.add(this.ClassName.open);
 
     const firstTree = tree[0]; // Only the direct descendant needs to be closed
-    Velocity(firstTree, 'slideDown', {
-      easing: this.options.easing,
-      duration: this.options.animationSpeed,
-    }).then(() => {
-      // Call custom event to indicate expansion
+    if (typeof Velocity === 'undefined') {
+      firstTree.style.display = 'block';
       this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
-    });
+    } else {
+      Velocity(firstTree, 'slideDown', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        // Call custom event to indicate expansion
+        this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+      });
+    }
   }
 }
 
