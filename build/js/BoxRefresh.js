@@ -1,119 +1,196 @@
+/* global runner */
+/* global Utilities */
+
 /* BoxRefresh()
  * =========
  * Adds AJAX content control to a box.
  *
- * @Usage: $('#my-box').boxRefresh(options)
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE BoxRefresh.js jQuery Plugin
+ *
+ * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element
  *         Pass any option as data-option="value"
  */
-+function ($) {
-  'use strict'
-
-  var DataKey = 'lte.boxrefresh'
-
-  var Default = {
-    source         : '',
-    params         : {},
-    trigger        : '.refresh-btn',
-    content        : '.box-body',
-    loadInContent  : true,
-    responseType   : '',
-    overlayTemplate: '<div class="overlay"><div class="fa fa-refresh fa-spin"></div></div>',
-    onLoadStart    : function () {
-    },
-    onLoadDone     : function (response) {
-      return response
-    }
+class BoxRefresh {
+  /**
+   * Binds listeners onto sidebar elements
+   */
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(BoxRefresh.Selector.data),
+      element => new BoxRefresh(element),
+    );
   }
 
-  var Selector = {
-    data: '[data-widget="box-refresh"]'
-  }
+  /**
+   * Binds Listeners to DOM
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} selectors list of dom selectors
+   */
+  constructor(element, options, selectors) {
+    // Add parameters to global scope
+    this.Default = BoxRefresh.Default;
+    this.Selector = selectors || BoxRefresh.Selector;
 
-  // BoxRefresh Class Definition
-  // =========================
-  var BoxRefresh = function (element, options) {
-    this.element  = element
-    this.options  = options
-    this.$overlay = $(options.overlay)
+    this.element = element;
 
-    if (options.source === '') {
-      throw new Error('Source url was not defined. Please specify a url in your BoxRefresh source option.')
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
+
+    if (this.options.source === '') {
+      throw new Error('Source url was not defined. Please specify a url in your BoxRefresh source option.');
     }
 
-    this._setUpListeners()
-    this.load()
+    this.setUpListeners();
+    this.load();
   }
 
-  BoxRefresh.prototype.load = function () {
-    this._addOverlay()
-    this.options.onLoadStart.call($(this))
-
-    $.get(this.options.source, this.options.params, function (response) {
-      if (this.options.loadInContent) {
-        $(this.options.content).html(response)
-      }
-      this.options.onLoadDone.call($(this), response)
-      this._removeOverlay()
-    }.bind(this), this.options.responseType !== '' && this.options.responseType)
+  /**
+   * Bind listener on refresh trigger
+   */
+  setUpListeners() {
+    const trigger = this.element.querySelector(this.options.trigger);
+    trigger.addEventListener(
+      'click',
+      (e) => {
+        e.preventDefault();
+        this.load();
+      },
+    );
   }
 
-  // Private
+  /**
+   * Load Content
+   */
+  load() {
+    // Add loading overlay
+    if (this.options.showOverlay) {
+      this.addOverlay();
+    }
 
-  BoxRefresh.prototype._setUpListeners = function () {
-    $(this.element).on('click', Selector.trigger, function (event) {
-      if (event) event.preventDefault()
-      this.load()
-    }.bind(this))
-  }
+    // Try to convert string to object – for headers/param definition
+    const stringToObj = (s) => {
+      const obj = (typeof s === 'string') ? JSON.parse(s) : s;
+      return obj;
+    };
 
-  BoxRefresh.prototype._addOverlay = function () {
-    $(this.element).append(this.$overlay)
-  }
+    // Declare method for http callout
+    const httpRequest = (resolve, reject) => {
+      // Create param string
+      let params = '?';
+      this.options.params = stringToObj(this.options.params);
+      Object.keys(this.options.params).map((param) => {
+        params = `${params}${param}=${this.options.params[param]}&`;
+        return params;
+      });
+      params = params.substring(0, params.length - 1);
 
-  BoxRefresh.prototype._removeOverlay = function () {
-    $(this.element).remove(this.$overlay)
-  }
+      // HTTP Request
+      this.xhr = new XMLHttpRequest();
+      this.xhr.open('GET', `${this.options.source}${params}`);
 
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
+      // Add headers
+      this.options.headers = stringToObj(this.options.headers);
+      Object.keys(this.options.headers).map(header =>
+        this.xhr.setRequestHeader(header, this.options.headers[header]));
 
-      if (!data) {
-        var options = $.extend({}, Default, $this.data(), typeof option == 'object' && option)
-        $this.data(DataKey, (data = new BoxRefresh($this, options)))
-      }
-
-      if (typeof data == 'string') {
-        if (typeof data[option] == 'undefined') {
-          throw new Error('No method named ' + option)
+      this.xhr.onload = () => {
+        if (this.xhr.status >= 200 && this.xhr.status < 300) {
+          resolve(this.xhr.response);
+        } else {
+          reject(this.xhr.statusText);
         }
-        data[option]()
+      };
+
+      this.xhr.onerror = () => reject(this.xhr.statusText);
+      this.xhr.send();
+    };
+
+    // Declare method for resolving of request
+    const httpResolve = (response) => {
+      if (typeof this.options.onLoadDone === 'string') {
+        window[this.options.onLoadDone](this, response);
+      } else {
+        this.options.onLoadDone.call(this, response);
       }
-    })
+
+      // remove loading overlay if it was shown
+      if (this.options.showOverlay) {
+        this.removeOverlay();
+      }
+
+      if (this.options.loadInContent) {
+        this.element.querySelector(this.options.content).innerHTML = response;
+      }
+    };
+
+    /**
+     * Start with custom pre-callout method
+     */
+    const request = new Promise((resolve, reject) => {
+      if (typeof this.options.onLoadStart === 'string') {
+        window[this.options.onLoadStart](this, reject, resolve);
+      } else {
+        this.options.onLoadStart.call(this, reject, resolve);
+      }
+    });
+
+    /**
+     * Main HTTP Request here
+     */
+    request.then(() => new Promise((resolve, reject) => httpRequest(resolve, reject)))
+      /**
+       * Remove loading overlay and call post-callout method
+       */
+      .then(response => httpResolve(response))
+      .catch(response => httpResolve(response));
   }
 
-  var old = $.fn.boxRefresh
-
-  $.fn.boxRefresh             = Plugin
-  $.fn.boxRefresh.Constructor = BoxRefresh
-
-  // No Conflict Mode
-  // ================
-  $.fn.boxRefresh.noConflict = function () {
-    $.fn.boxRefresh = old
-    return this
+  /**
+   * Add loading overlay to element
+   */
+  addOverlay() {
+    this.element.innerHTML += this.options.overlayTemplate;
   }
 
-  // BoxRefresh Data API
-  // =================
-  $(window).on('load', function () {
-    $(Selector.data).each(function () {
-      Plugin.call($(this))
-    })
-  })
+  /**
+   * Remove loading overlay
+   */
+  removeOverlay() {
+    const overlay = this.element.querySelector(this.Selector.overlay);
+    if (overlay) overlay.remove();
+    this.setUpListeners();
+  }
+}
 
-}(jQuery)
+/**
+ * Default Options
+ * @type {Object}
+ */
+BoxRefresh.Default = {
+  source: '',
+  params: {},
+  headers: {},
+  trigger: '.refresh-btn',
+  content: '.box-body',
+  loadInContent: true,
+  responseType: '',
+  showOverlay: true,
+  overlayTemplate: '<div class="overlay"><div class="fa fa-refresh fa-spin"></div></div>',
+  onLoadStart: (reject, resolve) => { resolve(); }, // pass as method name in data-attr
+  onLoadDone: response => response, // pass as method name in data-attr
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+BoxRefresh.Selector = {
+  data: '[data-widget="box-refresh"]',
+  overlay: '.overlay',
+};
+
+runner.push(BoxRefresh.bind);

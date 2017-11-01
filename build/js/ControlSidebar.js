@@ -1,138 +1,163 @@
+/* global runner */
+/* global Utilities */
+
 /* ControlSidebar()
  * ===============
  * Toggles the state of the control sidebar
  *
- * @Usage: $('#control-sidebar-trigger').controlSidebar(options)
- *         or add [data-toggle="control-sidebar"] to the trigger
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE ControlSidebar.js jQuery Plugin
+ *
+ * @Usage: new ControlSider(button, options);
+ *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
  *         Pass any option as data-option="value"
  */
-+function ($) {
-  'use strict'
+class ControlSidebar {
+  /**
+   * Binds listeners onto sidebar elements
+   */
+  static bind() {
+    const buttons = document.querySelectorAll(ControlSidebar.Selector.data);
 
-  var DataKey = 'lte.controlsidebar'
+    if (!buttons) return;
 
-  var Default = {
-    slide: true
+    Array.prototype.forEach.call(
+      buttons,
+      button => new ControlSidebar(button),
+    );
   }
 
-  var Selector = {
-    sidebar: '.control-sidebar',
-    data   : '[data-toggle="control-sidebar"]',
-    open   : '.control-sidebar-open',
-    bg     : '.control-sidebar-bg',
-    wrapper: '.wrapper',
-    content: '.content-wrapper',
-    boxed  : '.layout-boxed'
+  /**
+   * Opens existing active element(s) and calls method to bind
+   * click event listeners onto the sidebar itself
+   * @param {Object} button The main sidebar control trigger
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
+   */
+  constructor(button, options, classNames, selectors, events) {
+    // Add parameters to global scope
+    this.Default = ControlSidebar.Default;
+    this.ClassName = classNames || ControlSidebar.ClassName;
+    this.Selector = selectors || ControlSidebar.Selector;
+    this.Event = events || ControlSidebar.Event;
+
+    this.element = document.querySelector(this.Selector.sidebar);
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
+
+    // Get main page body element
+    this.body = document.querySelector('body');
+
+    // Toggle open/close
+    if (!button) return;
+    button.addEventListener(
+      'click',
+      (e) => {
+        e.preventDefault();
+        this.toggle();
+        this.fix();
+      },
+    );
+
+    window.addEventListener('resize', this.fix.bind(this));
   }
 
-  var ClassName = {
-    open : 'control-sidebar-open',
-    fixed: 'fixed'
-  }
+  /**
+   * Fix sidebar height
+   */
+  fix() {
+    if (this.body.classList.contains(this.ClassName.boxed)) {
+      const sbg = document.querySelector(this.Selector.bg);
+      const wrapper = document.querySelector(this.Selector.wrapper);
 
-  var Event = {
-    collapsed: 'collapsed.controlsidebar',
-    expanded : 'expanded.controlsidebar'
-  }
-
-  // ControlSidebar Class Definition
-  // ===============================
-  var ControlSidebar = function (element, options) {
-    this.element         = element
-    this.options         = options
-    this.hasBindedResize = false
-
-    this.init()
-  }
-
-  ControlSidebar.prototype.init = function () {
-    // Add click listener if the element hasn't been
-    // initialized using the data API
-    if (!$(this.element).is(Selector.data)) {
-      $(this).on('click', this.toggle)
-    }
-
-    this.fix()
-    $(window).resize(function () {
-      this.fix()
-    }.bind(this))
-  }
-
-  ControlSidebar.prototype.toggle = function (event) {
-    if (event) event.preventDefault()
-
-    this.fix()
-
-    if (!$(Selector.sidebar).is(Selector.open) && !$('body').is(Selector.open)) {
-      this.expand()
-    } else {
-      this.collapse()
-    }
-  }
-
-  ControlSidebar.prototype.expand = function () {
-    if (!this.options.slide) {
-      $('body').addClass(ClassName.open)
-    } else {
-      $(Selector.sidebar).addClass(ClassName.open)
-    }
-
-    $(this.element).trigger($.Event(Event.expanded))
-  }
-
-  ControlSidebar.prototype.collapse = function () {
-    $('body, ' + Selector.sidebar).removeClass(ClassName.open)
-    $(this.element).trigger($.Event(Event.collapsed))
-  }
-
-  ControlSidebar.prototype.fix = function () {
-    if ($('body').is(Selector.boxed)) {
-      this._fixForBoxed($(Selector.bg))
-    }
-  }
-
-  // Private
-
-  ControlSidebar.prototype._fixForBoxed = function (bg) {
-    bg.css({
-      position: 'absolute',
-      height  : $(Selector.wrapper).height()
-    })
-  }
-
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
-
-      if (!data) {
-        var options = $.extend({}, Default, $this.data(), typeof option == 'object' && option)
-        $this.data(DataKey, (data = new ControlSidebar($this, options)))
+      if (sbg && wrapper) {
+        sbg.style.position = 'absolute';
+        sbg.style.height = wrapper.innerHeight;
       }
-
-      if (typeof option == 'string') data.toggle()
-    })
+    }
   }
 
-  var old = $.fn.controlSidebar
+  /**
+   * Toggle sidebar open/close
+   */
+  toggle() {
+    const sidebar = document.querySelector(this.Selector.sidebar);
 
-  $.fn.controlSidebar             = Plugin
-  $.fn.controlSidebar.Constructor = ControlSidebar
+    if (!sidebar) return;
 
-  // No Conflict Mode
-  // ================
-  $.fn.controlSidebar.noConflict = function () {
-    $.fn.controlSidebar = old
-    return this
+    this.fix();
+
+    if (!sidebar.classList.contains(this.ClassName.open) &&
+        !this.body.classList.contains(this.ClassName.open)) {
+      this.expand();
+    } else {
+      this.collapse();
+    }
   }
 
-  // ControlSidebar Data API
-  // =======================
-  $(document).on('click', Selector.data, function (event) {
-    if (event) event.preventDefault()
-    Plugin.call($(this), 'toggle')
-  })
+  /**
+   * Open Sidebar
+   */
+  expand() {
+    if (!this.options.slide) {
+      this.body.classList.add(this.ClassName.open);
+    } else {
+      this.element.classList.add(this.ClassName.open);
+    }
 
-}(jQuery)
+    this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+  }
+
+  /**
+   * Close Sidebr
+   */
+  collapse() {
+    this.body.classList.remove(this.ClassName.open);
+    this.element.classList.remove(this.ClassName.open);
+
+    this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+ControlSidebar.Default = {
+  slide: true,
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+ControlSidebar.Selector = {
+  data: '[data-toggle="control-sidebar"]',
+  bg: '.control-sidebar-bg',
+  wrapper: '.wrapper',
+  sidebar: '.control-sidebar',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+ControlSidebar.ClassName = {
+  open: 'control-sidebar-open',
+  boxed: 'layout-boxed',
+};
+
+/**
+ * Custom Events
+ * @type {Object}
+ */
+ControlSidebar.Event = {
+  expanded: 'controlsidebar_expanded',
+  collapsed: 'controlsidebar_collapsed',
+};
+
+runner.push(ControlSidebar.bind);

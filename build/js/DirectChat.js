@@ -1,66 +1,83 @@
+/* global runner */
+
 /* DirectChat()
  * ===============
  * Toggles the state of the control sidebar
  *
- * @Usage: $('#my-chat-box').directChat()
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE DirectChat.js jQuery Plugin
+ *
+ * @Usage: new DirectChat(element, options)
  *         or add [data-widget="direct-chat"] to the trigger
  */
-+function ($) {
-  'use strict'
-
-  var DataKey = 'lte.directchat'
-
-  var Selector = {
-    data: '[data-widget="chat-pane-toggle"]',
-    box : '.direct-chat'
+class DirectChat {
+  /**
+   * Binds listeners onto sidebar elements
+   */
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(DirectChat.Selector.data),
+      element => new DirectChat(element),
+    );
   }
 
-  var ClassName = {
-    open: 'direct-chat-contacts-open'
+  /**
+   * Get options, call to set listeners
+   * @param {Object} element The main trigger element
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   */
+  constructor(element, classNames, selectors) {
+    // Add parameters to global scope
+    this.ClassName = classNames || DirectChat.ClassName;
+    this.Selector = selectors || DirectChat.Selector;
+
+    this.element = element;
+
+    this.setUpListener();
   }
 
-  // DirectChat Class Definition
-  // ===========================
-  var DirectChat = function (element) {
-    this.element = element
+  /**
+   * Set up event listeners
+   */
+  setUpListener() {
+    this.element.addEventListener(
+      'click',
+      (e) => {
+        this.toggle();
+        e.preventDefault();
+      },
+    );
   }
 
-  DirectChat.prototype.toggle = function ($trigger) {
-    $trigger.parents(Selector.box).first().toggleClass(ClassName.open)
+  /**
+   * Toggle overlay
+   */
+  toggle() {
+    const mainBox = this.element.closest(this.Selector.box);
+
+    if (mainBox) {
+      mainBox.classList.toggle(this.ClassName.open);
+    }
   }
+}
 
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+DirectChat.Selector = {
+  data: '[data-widget="chat-pane-toggle"]',
+  box: '.direct-chat',
+};
 
-      if (!data) {
-        $this.data(DataKey, (data = new DirectChat($this)))
-      }
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+DirectChat.ClassName = {
+  open: 'direct-chat-contacts-open',
+};
 
-      if (typeof option == 'string') data.toggle($this)
-    })
-  }
-
-  var old = $.fn.directChat
-
-  $.fn.directChat             = Plugin
-  $.fn.directChat.Constructor = DirectChat
-
-  // No Conflict Mode
-  // ================
-  $.fn.directChat.noConflict = function () {
-    $.fn.directChat = old
-    return this
-  }
-
-  // DirectChat Data API
-  // ===================
-  $(document).on('click', Selector.data, function (event) {
-    if (event) event.preventDefault()
-    Plugin.call($(this), 'toggle')
-  })
-
-}(jQuery)
+runner.push(DirectChat.bind);

@@ -1,179 +1,202 @@
+/* global runner */
+/* global Utilities */
+/* global Tree */
+
 /* Layout()
  * ========
  * Implements AdminLTE layout.
  * Fixes the layout height in case min-height fails.
  *
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE Layout.js jQuery Plugin
+ *
  * @usage activated automatically upon window load.
  *        Configure any options by passing data-option="value"
  *        to the body tag.
  */
-+function ($) {
-  'use strict'
+class Layout {
+  /**
+   * Constructor
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   */
+  constructor(options, classNames, selectors) {
+    // set defaults
+    this.Default = Layout.Default;
+    this.Selector = selectors || Layout.Selector;
+    this.ClassName = classNames || Layout.ClassName;
+    this.blindedResize = false; // Bind layout methods to resizing
+    // get body element from DOM
+    this.element = document.querySelector('body');
 
-  var DataKey = 'lte.layout'
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
 
-  var Default = {
-    slimscroll : true,
-    resetHeight: true
+    this.activate();
   }
 
-  var Selector = {
-    wrapper       : '.wrapper',
-    contentWrapper: '.content-wrapper',
-    layoutBoxed   : '.layout-boxed',
-    mainFooter    : '.main-footer',
-    mainHeader    : '.main-header',
-    sidebar       : '.sidebar',
-    controlSidebar: '.control-sidebar',
-    fixed         : '.fixed',
-    sidebarMenu   : '.sidebar-menu',
-    logo          : '.main-header .logo'
-  }
+  /**
+   * Actives layout methods
+   */
+  activate() {
+    this.fixLayout();
 
-  var ClassName = {
-    fixed         : 'fixed',
-    holdTransition: 'hold-transition'
-  }
+    if (this.options.transitionEnabled) {
+      this.element.classList.remove(this.ClassName.holdTransition);
+    }
 
-  var Layout = function (options) {
-    this.options      = options
-    this.bindedResize = false
-    this.activate()
-  }
-
-  Layout.prototype.activate = function () {
-    this.fix()
-    this.fixSidebar()
-
-    $('body').removeClass(ClassName.holdTransition)
-
+    // Reset main wrapper elements
     if (this.options.resetHeight) {
-      $('body, html, ' + Selector.wrapper).css({
-        'height'    : 'auto',
-        'min-height': '100%'
-      })
+      const elements = document.querySelectorAll(this.Selector.heightReset);
+
+      Array.prototype.forEach.call(elements, (el) => {
+        const elC = el;
+        elC.style.height = 'auto';
+        elC.style.minHeight = '100%';
+      });
     }
 
+    // Resize when window is resized
     if (!this.bindedResize) {
-      $(window).resize(function () {
-        this.fix()
-        this.fixSidebar()
+      window.addEventListener('resize', this.fixLayout.bind(this));
 
-        $(Selector.logo + ', ' + Selector.sidebar).one('webkitTransitionEnd otransitionend oTransitionEnd msTransitionEnd transitionend', function () {
-          this.fix()
-          this.fixSidebar()
-        }.bind(this))
-      }.bind(this))
+      const elLogo = document.querySelector(this.Selector.logo);
+      const elSidebar = document.querySelector(this.ClassName.sidebar);
 
-      this.bindedResize = true
+      if (elLogo) elLogo.addEventListener('transitionend', this.fixLayout.bind(this));
+      if (elSidebar) elSidebar.addEventListener('transitionend', this.fixLayout.bind(this));
+
+      this.bindedResize = true;
     }
 
-    $(Selector.sidebarMenu).on('expanded.tree', function () {
-      this.fix()
-      this.fixSidebar()
-    }.bind(this))
+    // If sidebar menu has expanded options, ensure layout is recalculated
+    const sidebarMenu = document.querySelector(this.Selector.sidebarMenu);
 
-    $(Selector.sidebarMenu).on('collapsed.tree', function () {
-      this.fix()
-      this.fixSidebar()
-    }.bind(this))
+    if (sidebarMenu) {
+      sidebarMenu.addEventListener(Tree.Event.expanded, this.fixLayout.bind(this));
+      sidebarMenu.addEventListener(Tree.Event.collapsed, this.fixLayout.bind(this));
+    }
   }
 
-  Layout.prototype.fix = function () {
-    // Remove overflow from .wrapper if layout-boxed exists
-    $(Selector.layoutBoxed + ' > ' + Selector.wrapper).css('overflow', 'hidden')
+  /**
+   * Fix content height so it fills the page
+   */
+  fix() {
+    // Get all elements
+    const elFooter = document.querySelector(this.Selector.mainFooter);
+    const elSidebar = document.querySelector(this.Selector.sidebar);
+    const elHeader = document.querySelector(this.Selector.mainHeader);
+    const elWrapper = document.querySelector(this.Selector.contentWrapper);
 
-    // Get window height and the wrapper height
-    var footerHeight  = $(Selector.mainFooter).outerHeight() || 0
-    var neg           = $(Selector.mainHeader).outerHeight() + footerHeight
-    var windowHeight  = $(window).height()
-    var sidebarHeight = $(Selector.sidebar).height() || 0
+    // We need a wrapper, otherwise lets just bail now
+    if (!elWrapper) {
+      return;
+    }
+
+    // Remove overflow from .wrapper if layout-boxed exists
+    const boxedWrapper = document.querySelector(`${this.Selector.layoutBoxed} > ${this.Selector.wrapper}`);
+    if (boxedWrapper) {
+      boxedWrapper.style.overflow = 'hidden';
+    }
+
+    // Get values for height, or set defaults
+    const footerHeight = (elFooter) ? elFooter.offsetHeight : 0;
+    const sidebarHeight = (elSidebar) ? elSidebar.offsetHeight : 0;
+    const windowHeight = window.innerHeight;
+    const neg = (elHeader) ? elHeader.offsetHeight + footerHeight : footerHeight;
+
+    let postSetHeight;
 
     // Set the min-height of the content and sidebar based on
     // the height of the document.
-    if ($('body').hasClass(ClassName.fixed)) {
-      $(Selector.contentWrapper).css('min-height', windowHeight - footerHeight)
+    if (document.querySelector('body').classList.contains(this.ClassName.fixed)) {
+      elWrapper.style.minHeight = `${windowHeight - footerHeight}px`;
     } else {
-      var postSetHeight
-
+      // Set height of page
       if (windowHeight >= sidebarHeight) {
-        $(Selector.contentWrapper).css('min-height', windowHeight - neg)
-        postSetHeight = windowHeight - neg
+        postSetHeight = windowHeight - neg;
+        elWrapper.style.minHeight = `${postSetHeight}px`;
       } else {
-        $(Selector.contentWrapper).css('min-height', sidebarHeight)
-        postSetHeight = sidebarHeight
+        postSetHeight = sidebarHeight;
+        elWrapper.style.minHeight = `${postSetHeight}px`;
       }
 
       // Fix for the control sidebar height
-      var $controlSidebar = $(Selector.controlSidebar)
-      if (typeof $controlSidebar !== 'undefined') {
-        if ($controlSidebar.height() > postSetHeight)
-          $(Selector.contentWrapper).css('min-height', $controlSidebar.height())
-      }
-    }
-  }
-
-  Layout.prototype.fixSidebar = function () {
-    // Make sure the body tag has the .fixed class
-    if (!$('body').hasClass(ClassName.fixed)) {
-      if (typeof $.fn.slimScroll !== 'undefined') {
-        $(Selector.sidebar).slimScroll({ destroy: true }).height('auto')
-      }
-      return
-    }
-
-    // Enable slimscroll for fixed layout
-    if (this.options.slimscroll) {
-      if (typeof $.fn.slimScroll !== 'undefined') {
-        // Destroy if it exists
-        $(Selector.sidebar).slimScroll({ destroy: true }).height('auto')
-
-        // Add slimscroll
-        $(Selector.sidebar).slimScroll({
-          height: ($(window).height() - $(Selector.mainHeader).height()) + 'px',
-          color : 'rgba(0,0,0,0.2)',
-          size  : '3px'
-        })
-      }
-    }
-  }
-
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
-
-      if (!data) {
-        var options = $.extend({}, Default, $this.data(), typeof option === 'object' && option)
-        $this.data(DataKey, (data = new Layout(options)))
-      }
-
-      if (typeof option === 'string') {
-        if (typeof data[option] === 'undefined') {
-          throw new Error('No method named ' + option)
+      const controlSidebar = document.querySelector(this.Selector.controlSidebar);
+      if (controlSidebar) {
+        if (controlSidebar.clientHeight > postSetHeight) {
+          elWrapper.style.minHeight = `${controlSidebar.clientHeight}px`;
         }
-        data[option]()
       }
-    })
+    }
   }
 
-  var old = $.fn.layout
+  /**
+   * Fix Sidebar for scrolling on fixed layout
+   */
+  fixSidebar() {
+    const elHeader = document.querySelector(this.Selector.mainHeader);
+    const elSidebar = document.querySelector(this.Selector.sidebar);
 
-  $.fn.layout            = Plugin
-  $.fn.layout.Constuctor = Layout
+    if (!elSidebar) return;
 
-  // No conflict mode
-  // ================
-  $.fn.layout.noConflict = function () {
-    $.fn.layout = old
-    return this
+    // Make sure the body tag has the .fixed class otherwise return
+    if (!this.element.classList.contains(this.ClassName.fixed)) {
+      return;
+    }
+
+    // Fix for scrolling here
+    const headerHeight = (elHeader) ? elHeader.offsetHeight : 0;
+    const windowHeight = window.innerHeight;
+
+    elSidebar.style.height = `${windowHeight - headerHeight}px`;
+    elSidebar.style.overflowY = 'scroll';
   }
 
-  // Layout DATA-API
-  // ===============
-  $(window).on('load', function () {
-    Plugin.call($('body'))
-  })
-}(jQuery)
+  /**
+   * Proxy for calling both fix methods
+   */
+  fixLayout() {
+    this.fix();
+    this.fixSidebar();
+  }
+}
+
+/**
+ * Default Options
+ * @type {Object}
+ */
+Layout.Default = {
+  resetHeight: true,
+  transitionEnabled: true,
+};
+
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+Layout.Selector = {
+  heightReset: 'body, html, .wrapper',
+  wrapper: '.wrapper',
+  sidebar: '.sidebar',
+  logo: '.main-header .logo',
+  layoutBoxed: '.layout-boxed',
+  sidebarMenu: '.sidebar-menu',
+  mainFooter: '.main-footer',
+  mainHeader: '.main-header',
+  contentWrapper: '.content-wrapper',
+  controlSidebar: '.control-sidebar',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+Layout.ClassName = {
+  holdTransition: 'hold-transition',
+  fixed: 'fixed',
+};
+
+runner.push(() => new Layout());

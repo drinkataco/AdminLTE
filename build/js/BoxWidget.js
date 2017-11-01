@@ -1,163 +1,259 @@
+/* global runner */
+/* global Velocity */
+/* global Utilities */
+
 /* BoxWidget()
- * ======
- * Adds box widget functions to boxes.
+ * =========
+ * Adds AJAX content control to a box.
  *
- * @Usage: $('.my-box').boxWidget(options)
- *         This plugin auto activates on any element using the `.box` class
+ * @author Josh Walwyn <me@joshwalwyn.com>
+ *
+ * Adapted from Admin LTE BoxWidget.js jQuery Plugin
+ *
+ * @Usage: new BoxWidget(element, options);
+ *         or add [data-widget="box-refresh"] to the box element
  *         Pass any option as data-option="value"
  */
-+function ($) {
-  'use strict'
-
-  var DataKey = 'lte.boxwidget'
-
-  var Default = {
-    animationSpeed : 500,
-    collapseTrigger: '[data-widget="collapse"]',
-    removeTrigger  : '[data-widget="remove"]',
-    collapseIcon   : 'fa-minus',
-    expandIcon     : 'fa-plus',
-    removeIcon     : 'fa-times'
+class BoxWidget {
+  /**
+   * Binds listeners onto sidebar elements
+   */
+  static bind() {
+    Array.prototype.forEach.call(
+      document.querySelectorAll(BoxWidget.Selector.data),
+      element => new BoxWidget(element),
+    );
   }
 
-  var Selector = {
-    data     : '.box',
-    collapsed: '.collapsed-box',
-    body     : '.box-body',
-    footer   : '.box-footer',
-    tools    : '.box-tools'
+  /**
+   * Add event listeners to box buttons if exists
+   * @param {Object} element The main sidebar element
+   * @param {Object|null} options list of options
+   * @param {Object|null} classNames list of classnames
+   * @param {Object|null} selectors list of dom selectors
+   * @param {Object|null} events list of event names
+   */
+  constructor(element, options, classNames, selectors, events) {
+    // Add parameters to global scope
+    this.Default = BoxWidget.Default;
+    this.ClassName = classNames || BoxWidget.ClassName;
+    this.Selector = selectors || BoxWidget.Selector;
+    this.Event = events || BoxWidget.Event;
+    this.element = element;
+
+    // Set options here
+    this.options = Utilities.grabOptions(this.Default, options, this.element);
+
+    // bind listeners
+    this.setUpListeners();
   }
 
-  var ClassName = {
-    collapsed: 'collapsed-box'
+  /**
+   * Set up box widget button listeners
+   */
+  setUpListeners() {
+    // Bind Collapse Events
+    Array.prototype.forEach.call(
+      this.element.querySelectorAll(this.options.collapseTrigger),
+      (el) => {
+        el.addEventListener(
+          'click',
+          (e) => {
+            e.preventDefault();
+            this.toggle();
+          },
+        );
+      },
+    );
+
+    // Bind Remove Events
+    Array.prototype.forEach.call(
+      this.element.querySelectorAll(this.options.removeTrigger),
+      (el) => {
+        el.addEventListener(
+          'click',
+          (e) => {
+            e.preventDefault();
+            this.remove();
+          },
+        );
+      },
+    );
   }
 
-  var Event = {
-    collapsed: 'collapsed.boxwidget',
-    expanded : 'expanded.boxwidget',
-    removed  : 'removed.boxwidget'
-  }
-
-  // BoxWidget Class Definition
-  // =====================
-  var BoxWidget = function (element, options) {
-    this.element = element
-    this.options = options
-
-    this._setUpListeners()
-  }
-
-  BoxWidget.prototype.toggle = function () {
-    var isOpen = !$(this.element).is(Selector.collapsed)
+  /**
+   * Toggle the collapse state of the box
+   */
+  toggle() {
+    const isOpen = !this.element.classList.contains(this.ClassName.collapsed);
 
     if (isOpen) {
-      this.collapse()
+      this.collapse();
     } else {
-      this.expand()
+      this.expand();
     }
   }
 
-  BoxWidget.prototype.expand = function () {
-    var expandedEvent = $.Event(Event.expanded)
-    var collapseIcon  = this.options.collapseIcon
-    var expandIcon    = this.options.expandIcon
-
-    $(this.element).removeClass(ClassName.collapsed)
-
-    $(this.element)
-      .find(Selector.tools)
-      .find('.' + expandIcon)
-      .removeClass(expandIcon)
-      .addClass(collapseIcon)
-
-    $(this.element).find(Selector.body + ', ' + Selector.footer)
-      .slideDown(this.options.animationSpeed, function () {
-        $(this.element).trigger(expandedEvent)
-      }.bind(this))
+  /**
+   * Remove box
+   */
+  remove() {
+    // Slide whole element up to remove if velocity defined, else just hide
+    if (typeof Velocity === 'undefined') {
+      this.element.dispatchEvent(new CustomEvent(this.Event.removed));
+      this.element.remove();
+    } else {
+      Velocity(this.element, 'slideUp', {
+        easing: this.options.easing,
+        duration: this.options.animationSpeed,
+      }).then(() => {
+        this.element.dispatchEvent(new CustomEvent(this.Event.removed));
+        this.element.remove();
+      });
+    }
   }
 
-  BoxWidget.prototype.collapse = function () {
-    var collapsedEvent = $.Event(Event.collapsed)
-    var collapseIcon   = this.options.collapseIcon
-    var expandIcon     = this.options.expandIcon
+  /**
+   * Collapse box by sliding up elements
+   */
+  collapse() {
+    // Change collapse icon(s) to show expanded icon
+    const collapseIcons = this.element.querySelectorAll(`.${this.options.collapseIcon}`);
 
-    $(this.element)
-      .find(Selector.tools)
-      .find('.' + collapseIcon)
-      .removeClass(collapseIcon)
-      .addClass(expandIcon)
+    Array.prototype.forEach.call(collapseIcons, (i) => {
+      i.classList.remove(this.options.collapseIcon);
+      i.classList.add(this.options.expandIcon);
+    });
 
-    $(this.element).find(Selector.body + ', ' + Selector.footer)
-      .slideUp(this.options.animationSpeed, function () {
-        $(this.element).addClass(ClassName.collapsed)
-        $(this.element).trigger(collapsedEvent)
-      }.bind(this))
-  }
-
-  BoxWidget.prototype.remove = function () {
-    var removedEvent = $.Event(Event.removed)
-
-    $(this.element).slideUp(this.options.animationSpeed, function () {
-      $(this.element).trigger(removedEvent)
-      $(this.element).remove()
-    }.bind(this))
-  }
-
-  // Private
-
-  BoxWidget.prototype._setUpListeners = function () {
-    var that = this
-
-    $(this.element).on('click', this.options.collapseTrigger, function (event) {
-      if (event) event.preventDefault()
-      that.toggle()
-    })
-
-    $(this.element).on('click', this.options.removeTrigger, function (event) {
-      if (event) event.preventDefault()
-      that.remove()
-    })
-  }
-
-  // Plugin Definition
-  // =================
-  function Plugin(option) {
-    return this.each(function () {
-      var $this = $(this)
-      var data  = $this.data(DataKey)
-
-      if (!data) {
-        var options = $.extend({}, Default, $this.data(), typeof option == 'object' && option)
-        $this.data(DataKey, (data = new BoxWidget($this, options)))
+    // Determine whether to dispatch collapsed event
+    const dispatchEvent = (fireEvent) => {
+      if (fireEvent) {
+        this.element.dispatchEvent(new CustomEvent(this.Event.collapsed));
       }
+    };
 
-      if (typeof option == 'string') {
-        if (typeof data[option] == 'undefined') {
-          throw new Error('No method named ' + option)
+    // Slide elements up
+    const slideUp = (element, fireEvent) => {
+      const boxElement = element;
+      if (boxElement) {
+        // Slide if velocity exists, otherwise just hide
+        if (typeof Velocity === 'undefined') {
+          boxElement.style.display = 'none';
+          dispatchEvent(fireEvent);
+        } else {
+          Velocity(boxElement, 'slideUp', {
+            easing: this.options.easing,
+            duration: this.options.animationSpeed,
+          }).then(() => {
+            dispatchEvent(fireEvent);
+          });
         }
-        data[option]()
       }
-    })
+    };
+
+    // Slide both body and footer
+    slideUp(this.element.querySelector(this.Selector.footer));
+    slideUp(this.element.querySelector(this.Selector.body), true);
+
+    // Add collapsed class after animation finished
+    setTimeout(
+      () => this.element.classList.add(this.ClassName.collapsed),
+      this.options.animationSpeed,
+    );
   }
 
-  var old = $.fn.boxWidget
+  /**
+   * Expand box by sliding down elements
+   */
+  expand() {
+    // Change collapse icon(s) to show expanded icon
+    const collapseIcons = this.element.querySelectorAll(`.${this.options.expandIcon}`);
 
-  $.fn.boxWidget             = Plugin
-  $.fn.boxWidget.Constructor = BoxWidget
+    Array.prototype.forEach.call(collapseIcons, (i) => {
+      i.classList.remove(this.options.expandIcon);
+      i.classList.add(this.options.collapseIcon);
+    });
 
-  // No Conflict Mode
-  // ================
-  $.fn.boxWidget.noConflict = function () {
-    $.fn.boxWidget = old
-    return this
+    // Determine whether to dispatch expanded event
+    const dispatchEvent = (fireEvent) => {
+      if (fireEvent) {
+        this.element.dispatchEvent(new CustomEvent(this.Event.expanded));
+      }
+    };
+
+    // Slide elements up
+    const slideDown = (element, fireEvent) => {
+      const boxElement = element;
+      if (boxElement) {
+        // Slide if velocity exists, otherwise just show
+        if (typeof Velocity === 'undefined') {
+          boxElement.style.display = 'block';
+          dispatchEvent(fireEvent);
+        } else {
+          Velocity(element, 'slideDown', {
+            easing: this.options.easing,
+            duration: this.options.animationSpeed,
+          }).then(() => {
+            dispatchEvent(fireEvent);
+          });
+        }
+      }
+    };
+
+    // Slide both body and footer
+    slideDown(this.element.querySelector(this.Selector.footer));
+    slideDown(this.element.querySelector(this.Selector.body), true);
+
+    // Add collapsed class after animation finished
+    setTimeout(
+      () => this.element.classList.remove(this.ClassName.collapsed),
+      this.options.animationSpeed,
+    );
   }
+}
 
-  // BoxWidget Data API
-  // ==================
-  $(window).on('load', function () {
-    $(Selector.data).each(function () {
-      Plugin.call($(this))
-    })
-  })
+/**
+ * Default Options
+ * @type {Object}
+ */
+BoxWidget.Default = {
+  animationSpeed: 500,
+  easing: 'easeInSine',
+  collapseTrigger: '[data-widget="collapse"]',
+  removeTrigger: '[data-widget="remove"]',
+  collapseIcon: 'fa-minus',
+  expandIcon: 'fa-plus',
+  removeIcon: 'fa-times',
+};
 
-}(jQuery)
+/**
+ * Selectors for query selections
+ * @type {Object}
+ */
+BoxWidget.Selector = {
+  data: '.box',
+  // collapsed: '.collapsed-box',
+  body: '.box-body',
+  footer: '.box-footer',
+  // tools: '.box-tools',
+};
+
+/**
+ * DOM Class Names
+ * @type {Object}
+ */
+BoxWidget.ClassName = {
+  collapsed: 'collapsed-box',
+};
+
+/**
+ * Custom Events
+ * @type {Object}
+ */
+BoxWidget.Event = {
+  collapsed: 'boxwidget_collapsed',
+  expanded: 'boxwidget_expanded',
+  removed: 'boxwidget_remove',
+};
+
+runner.push(BoxWidget.bind);
