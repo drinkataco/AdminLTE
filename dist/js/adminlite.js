@@ -93,7 +93,7 @@ Utilities.grabOptions = (def, current, element, fields) => {
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE Tree.js jQuery Plugin
  *
  * @Usage: new Tree(element, options)
  *         Add [data-widget="tree"] to the ul element
@@ -305,7 +305,7 @@ runner.push(Tree.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE PushMenu.js jQuery Plugin
  *
  * @Usage: new PushMenu(element, options)
  *         Add [data-widget="push-menu"] to the ul element
@@ -534,7 +534,7 @@ runner.push(PushMenu.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE Layout.js jQuery Plugin
  *
  * @usage activated automatically upon window load.
  *        Configure any options by passing data-option="value"
@@ -736,7 +736,7 @@ runner.push(() => new Layout());
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE ControlSidebar.js jQuery Plugin
  *
  * @Usage: new ControlSider(button, options);
  *         or add [data-toggle="control-sidebar"] to the sidbar trigger/button
@@ -901,7 +901,7 @@ runner.push(ControlSidebar.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE BoxRefresh.js jQuery Plugin
  *
  * @Usage: new BoxRefresh(element, options);
  *         or add [data-widget="box-refresh"] to the box element
@@ -1100,7 +1100,7 @@ runner.push(BoxRefresh.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE BoxWidget.js jQuery Plugin
  *
  * @Usage: new BoxWidget(element, options);
  *         or add [data-widget="box-refresh"] to the box element
@@ -1359,7 +1359,7 @@ runner.push(BoxWidget.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE DirectChat.js jQuery Plugin
  *
  * @Usage: new DirectChat(element, options)
  *         or add [data-widget="direct-chat"] to the trigger
@@ -1445,7 +1445,7 @@ runner.push(DirectChat.bind);
  *
  * @author Josh Walwyn <me@joshwalwyn.com>
  *
- * Adapted from Admin LTE Sidebar.js jQuery Plugin
+ * Adapted from Admin LTE TodoList.js jQuery Plugin
  *
  * @Usage: new TodoList(element, options)
  *         or add [data-widget="todo-list"] to the ul element

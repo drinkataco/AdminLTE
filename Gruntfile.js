@@ -2,6 +2,8 @@
 module.exports = function (grunt) { // jshint ignore:line
   'use strict';
 
+  require('load-grunt-tasks')(grunt);
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     watch: {
@@ -105,7 +107,21 @@ module.exports = function (grunt) { // jshint ignore:line
       },
       production: {
         files: {
-          'dist/js/adminlite.min.js': ['dist/js/adminlite.js']
+          'dist/js/adminlite.min.js': ['dist/js/adminlite.js'],
+          'dist/js/adminlite.babel.min.js': ['dist/js/adminlite.babel.js'],
+        }
+      }
+    },
+
+    // Convert from ES6
+    babel: {
+      options: {
+        sourceMap: true,
+        presets: ['env']
+      },
+      dist: {
+        files: {
+          'dist/js/adminlite.babel.js': 'dist/js/adminlite.js'
         }
       }
     },
@@ -218,7 +234,7 @@ module.exports = function (grunt) { // jshint ignore:line
   grunt.registerTask('lint', ['eslint', 'csslint', 'bootlint'])
   // JS task
   //grunt.registerTask('js', ['concat', 'uglify'])
-  grunt.registerTask('js', ['concat', 'uglify'])
+  grunt.registerTask('js', ['concat', 'babel', 'uglify'])
   // CSS Task
   grunt.registerTask('css', ['less:development', 'less:production', 'replace'])
 
