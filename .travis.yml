@@ -1,0 +1,5 @@
+language: javascript
+before_script:
+  - npm install grunt-cli -g
+install: npm install
+script: grunt lint
