@@ -2,7 +2,7 @@
   "name": "AdminLite",
   "version": "0.0.1alpha",
   "main": "dist/js/adminlite.js",
-  "repository": "git://github.com/drinkataco/AdminLTE.git",
+  "repository": "git://github.com/drinkataco/AdminLite.git",
   "license": "MIT",
   "devDependencies": {
     "R2": "^1.4.3",
