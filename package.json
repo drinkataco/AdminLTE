@@ -38,5 +38,8 @@
     "font-awesome": "^4.7.0",
     "velocity": "^0.7.2"
   },
-  "description": "Lite Version of AdminLTE – Without most plugins, including jQuery. No Changes have been made to the CSS!"
+  "description": "Lite Version of AdminLTE – Without most plugins, including jQuery. No Changes have been made to the CSS!",
+  "scripts": {
+    "test": "grunt travis --verbose"
+  }
 }

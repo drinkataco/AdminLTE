@@ -1,5 +1,6 @@
 Introduction
 ============
+[![Build Status](https://travis-ci.org/drinkataco/AdminLite.svg?branch=master)](https://travis-ci.org/drinkataco/AdminLite)
 
 **AdminLite** -- is a fully responsive admin template. Based on **[AdminLTE](https://adminlte.io/docs)** which uses the **[Bootstrap 3](https://github.com/twbs/bootstrap)** framework. Highly customizable and easy to use. Fits many screen resolutions from small mobile devices to large desktops. Check out the live preview now and see for yourself.
 
