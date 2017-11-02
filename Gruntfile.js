@@ -239,7 +239,7 @@ module.exports = function (grunt) { // jshint ignore:line
   grunt.registerTask('css', ['less:development', 'less:production', 'replace'])
 
   // Task for building with travis
-  grunt.registerTask('travis', ['eslint', 'csslint', 'bootlint']);
+  grunt.registerTask('travis', ['eslint', 'csslint']);
 
   // The default task (running 'grunt' in console) is 'watch'
   grunt.registerTask('default', ['watch'])
