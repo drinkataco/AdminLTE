@@ -8,6 +8,8 @@ AdminLite is a lighter version of AdminLTE – which scraps the main dependency 
 
 All JS has been rewritten in ES6, with a babel compiler (and polyfill) included to open up browser compatability. A boostrap native package is also available, as bootstrap traditionally requires jQuery.
 
+I have tried my hardest to immitate the functionality of the existing javascript. The only difference should be on initiation, instead of initiating as a jQuery plugin, they should be initiated as an object - `new Tree(element)` (if initiated manually).
+
 For certain animations, Velocity can be included for slideUps and slideDowns, although this is not necessary.
 
 ### ES6 and Browser Support
