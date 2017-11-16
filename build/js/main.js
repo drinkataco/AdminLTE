@@ -19,6 +19,6 @@ const binder = () => {
   PushMenu.bind();
   TodoList.bind();
   Tree.bind();
-}
+};
 
 document.addEventListener('DOMContentLoaded', binder);

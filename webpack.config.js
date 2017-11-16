@@ -1,26 +1,47 @@
 const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 module.exports = {
   context: path.resolve(__dirname, ''),
+
   entry: {
-    app: './build/js/main.js',
+    adminlite: './build/js/main.js',
   },
   output: {
     path: path.resolve(__dirname, 'dist/js'),
-    filename: 'adminlite.bundle.js',
+    filename: '[name].bundle.js',
   },
-  // Some of these files we don't want to webpack. but just copy over to local directory
+
+  module: {
+    rules: [{
+      test: /\.less$/,
+      use: [{
+        loader: "style-loader" // creates style nodes from JS strings
+      }, {
+        loader: "css-loader" // translates CSS into CommonJS
+      }, {
+        loader: "less-loader" // compiles Less to CSS
+      }]
+    }]
+  },
+
+  /**
+   * Example Plugins to use with Admin Lite
+   * @type {Array}
+   */
   plugins: [
     new CopyWebpackPlugin([
       // Bootstrap CSS
+      // @todo, this is required, so pack?
       {
         from: './node_modules/bootstrap/dist/css/bootstrap.min.css',
         to: '../../assets/bootstrap/css',
         flatten: true
       },
       // Bootstrap Fonts
+      // @todo, this is required, so pack?
       {
         from: './node_modules/bootstrap/fonts/*',
         to: '../../assets/bootstrap/fonts',
