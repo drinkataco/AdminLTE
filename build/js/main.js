@@ -1,3 +1,6 @@
+/*
+ * JS
+ */
 import BoxRefresh from './src/BoxRefresh';
 import BoxWidget from './src/BoxWidget';
 import ControlSidebar from './src/ControlSidebar';
@@ -7,9 +10,7 @@ import PushMenu from './src/PushMenu';
 import TodoList from './src/TodoList';
 import Tree from './src/Tree';
 
-/**
- * Bind All
- */
+// Bind All
 const binder = () => {
   BoxRefresh.bind();
   BoxWidget.bind();

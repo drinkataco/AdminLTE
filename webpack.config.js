@@ -2,46 +2,73 @@ const path = require('path');
 const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const Babel = require('babel-loader');
+
+const extractLESS = new ExtractTextPlugin('../../dist/css/[name].min.css');
+
+// const PATHS = {
+//   style: path.join(__dirname, 'sources', 'less'),
+//   build: path.join(__dirname, '..', 'web/assets')
+// };
 
 module.exports = {
   context: path.resolve(__dirname, ''),
 
   entry: {
+    // JS
     adminlite: './build/js/main.js',
+
+    // Styles and Skins
+    styles: './build/less/AdminLTE.less',
+    all_skins: './build/less/skins/_all-skins.less',
+    skin_black_light: './build/less/skins/skin-black-light.less',
+    skin_black: './build/less/skins/skin-black.less',
+    skin_blue_light: './build/less/skins/skin-blue-light.less',
+    skin_blue: './build/less/skins/skin-blue.less',
+    skin_green_light: './build/less/skins/skin-green-light.less',
+    skin_green: './build/less/skins/skin-green.less',
+    skin_purple_light: './build/less/skins/skin-purple-light.less',
+    skin_purple: './build/less/skins/skin-purple.less',
+    skin_red_light: './build/less/skins/skin-red-light.less',
+    skin_red: './build/less/skins/skin-red.less',
+    skin_yellow_light: './build/less/skins/skin-yellow-light.less',
+    skin_yellow: './build/less/skins/skin-yellow.less',
   },
+
   output: {
     path: path.resolve(__dirname, 'dist/js'),
     filename: '[name].bundle.js',
   },
 
   module: {
-    rules: [{
-      test: /\.less$/,
-      use: [{
-        loader: "style-loader" // creates style nodes from JS strings
-      }, {
-        loader: "css-loader" // translates CSS into CommonJS
-      }, {
-        loader: "less-loader" // compiles Less to CSS
-      }]
-    }]
+    loaders: [
+      // transpile ES6/7 to ES5 via babel
+      {
+        test: /\.js$/,
+        exclude: /(node_modules)/,
+         loader: 'babel-loader',
+         query: {
+             presets: ['es2015']
+         }
+      },
+      // Compile LESS
+      {
+        test: /\.less$/,
+        exclude: /(node_modules)/,
+        loader: extractLESS.extract("css-loader!less-loader", "css-loader!less-loader"),
+      },
+    ]
   },
 
-  /**
-   * Example Plugins to use with Admin Lite
-   * @type {Array}
-   */
   plugins: [
     new CopyWebpackPlugin([
       // Bootstrap CSS
-      // @todo, this is required, so pack?
       {
         from: './node_modules/bootstrap/dist/css/bootstrap.min.css',
         to: '../../assets/bootstrap/css',
         flatten: true
       },
       // Bootstrap Fonts
-      // @todo, this is required, so pack?
       {
         from: './node_modules/bootstrap/fonts/*',
         to: '../../assets/bootstrap/fonts',
@@ -83,6 +110,7 @@ module.exports = {
         to: '../../assets/bootstrap.native/js',
         flatten: true
       },
-    ])
+    ]),
+    extractLESS
   ]
 };
