@@ -3,6 +3,8 @@ const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const Babel = require('babel-loader');
+const FileLoader = require('file-loader');
+const ImageLoader = require('image-webpack-loader');
 
 const extractLESS = new ExtractTextPlugin('../../dist/css/[name].min.css');
 
