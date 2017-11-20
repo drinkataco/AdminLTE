@@ -8,13 +8,9 @@ const ImageLoader = require('image-webpack-loader');
 
 const extractLESS = new ExtractTextPlugin('../../dist/css/[name].min.css');
 
-// const PATHS = {
-//   style: path.join(__dirname, 'sources', 'less'),
-//   build: path.join(__dirname, '..', 'web/assets')
-// };
 
 module.exports = {
-  context: path.resolve(__dirname, ''),
+  context: path.resolve(__dirname),
 
   entry: {
     // JS
@@ -38,8 +34,8 @@ module.exports = {
   },
 
   output: {
-    path: path.resolve(__dirname, 'dist/js'),
-    filename: '[name].bundle.js',
+    path: path.resolve(__dirname),
+    filename: 'dist/js/[name].bundle.js',
   },
 
   module: {
@@ -57,8 +53,16 @@ module.exports = {
       {
         test: /\.less$/,
         exclude: /(node_modules)/,
-        loader: extractLESS.extract("css-loader!less-loader", "css-loader!less-loader"),
+        loader: extractLESS.extract("css-loader?url=false!less-loader", "css-loader?url=false!less-loader"),
       },
+      // Image Loader
+      {
+        test: /\.(gif|png|jpe?g|svg)$/i,
+        loaders: [
+          'file-loader?hash=sha512&digest=hex&name=[hash].[ext]',
+          'image-webpack-loader?{optimizationLevel: 7, interlaced: false, pngquant:{quality: "65-90", speed: 4}, mozjpeg: {quality: 65}}'
+        ]
+      }
     ]
   },
 
