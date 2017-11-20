@@ -10,7 +10,7 @@ const extractLESS = new ExtractTextPlugin('../../dist/css/[name].min.css');
 
 
 module.exports = {
-  context: path.resolve(__dirname),
+  context: path.resolve(__dirname, ''),
 
   entry: {
     // JS
@@ -34,8 +34,8 @@ module.exports = {
   },
 
   output: {
-    path: path.resolve(__dirname),
-    filename: 'dist/js/[name].bundle.js',
+    path: path.resolve(__dirname, 'dist/js'),
+    filename: '[name].bundle.js',
   },
 
   module: {
@@ -53,7 +53,10 @@ module.exports = {
       {
         test: /\.less$/,
         exclude: /(node_modules)/,
-        loader: extractLESS.extract("css-loader?url=false!less-loader", "css-loader?url=false!less-loader"),
+        loader: extractLESS.extract(
+          'css-loader?url=false!less-loader',
+          'css-loader?url=false!less-loader'
+        ),
       },
       // Image Loader
       {
