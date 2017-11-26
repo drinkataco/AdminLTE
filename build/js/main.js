@@ -22,4 +22,13 @@ const binder = () => {
   Tree.bind();
 };
 
+window.BoxRefresh = BoxRefresh;
+window.BoxWidget = BoxWidget;
+window.ControlSidebar = ControlSidebar;
+window.DirectChat = DirectChat;
+window.Layout = Layout;
+window.PushMenu = PushMenu;
+window.TodoList = TodoList;
+window.Tree = Tree;
+
 document.addEventListener('DOMContentLoaded', binder);
